@@ -1,0 +1,149 @@
+.saved-searches {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.saved-searches__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.saved-searches__header h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111;
+}
+
+.saved-searches__count {
+  font-size: 14px;
+  color: #666;
+  background: #f5f5f5;
+  padding: 4px 12px;
+  border-radius: 99px;
+}
+
+.saved-searches__empty {
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.saved-searches__empty-icon {
+  font-size: 64px;
+  display: block;
+  margin-bottom: 20px;
+}
+
+.saved-searches__empty p {
+  font-size: 18px;
+  color: #111;
+  margin-bottom: 8px;
+}
+
+.saved-searches__empty small {
+  font-size: 14px;
+  color: #666;
+}
+
+.saved-searches__list {
+  display: grid;
+  gap: 20px;
+}
+
+.saved-search-card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  transition: all 0.2s;
+}
+
+.saved-search-card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-color: #ccc;
+}
+
+.saved-search-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.saved-search-card__name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111;
+}
+
+.saved-search-card__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.saved-search-card__alert,
+.saved-search-card__delete {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.saved-search-card__alert:hover {
+  background: #f5f5f5;
+  border-color: #cc0000;
+}
+
+.saved-search-card__alert.active {
+  background: rgba(204,0,0,0.1);
+  border-color: #cc0000;
+}
+
+.saved-search-card__delete:hover {
+  background: rgba(220,53,69,0.1);
+  border-color: #dc3545;
+}
+
+.saved-search-card__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.filter-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 99px;
+  font-size: 12px;
+  color: #666;
+}
+
+.saved-search-card__matches {
+  font-size: 13px;
+  font-weight: 600;
+  color: #cc0000;
+  background: rgba(204,0,0,0.1);
+  padding: 6px 12px;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.saved-searches-loading {
+  text-align: center;
+  padding: 60px;
+  color: #666;
+}

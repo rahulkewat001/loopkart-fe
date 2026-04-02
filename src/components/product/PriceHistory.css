@@ -1,0 +1,123 @@
+.price-history {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.price-history__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.price-history__header h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111;
+}
+
+.price-history__change {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.price-history__change.down {
+  color: #28a745;
+  background: rgba(40,167,69,0.1);
+}
+
+.price-history__change.up {
+  color: #dc3545;
+  background: rgba(220,53,69,0.1);
+}
+
+.price-history__chart {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.price-history__y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #666;
+  padding: 10px 0;
+}
+
+.price-history__graph {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 150px;
+  background: #fafafa;
+  border-radius: 6px;
+  padding: 10px;
+}
+
+.price-history__point-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  height: 100%;
+}
+
+.price-history__bar {
+  width: 100%;
+  background: linear-gradient(to top, #cc0000, #ff4d4d);
+  border-radius: 4px 4px 0 0;
+  position: relative;
+  min-height: 10px;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.price-history__bar:hover {
+  opacity: 0.8;
+  transform: scaleY(1.05);
+}
+
+.price-history__dot {
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 8px;
+  background: #cc0000;
+  border: 2px solid #fff;
+  border-radius: 50%;
+}
+
+.price-history__legend {
+  display: flex;
+  justify-content: space-around;
+  gap: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+.price-history__legend-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: center;
+}
+
+.price-history__legend-label {
+  font-size: 11px;
+  color: #666;
+}
+
+.price-history__legend-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+}

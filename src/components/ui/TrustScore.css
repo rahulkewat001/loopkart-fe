@@ -1,0 +1,51 @@
+.trust-score {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.trust-score--sm .trust-score__circle {
+  width: 40px;
+  height: 40px;
+}
+
+.trust-score--md .trust-score__circle {
+  width: 50px;
+  height: 50px;
+}
+
+.trust-score--lg .trust-score__circle {
+  width: 60px;
+  height: 60px;
+}
+
+.trust-score__circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.trust-score__value {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.trust-score__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.trust-score__label {
+  font-size: 11px;
+  color: #666;
+  font-weight: 500;
+}
+
+.trust-score__status {
+  font-size: 13px;
+  font-weight: 600;
+}

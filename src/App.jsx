@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
+import Footer from './components/layout/Footer'
 import LoginPage            from './pages/auth/LoginPage'
 import RegisterPage         from './pages/auth/RegisterPage'
 import ForgotPasswordPage   from './pages/auth/ForgotPasswordPage'
@@ -27,6 +28,9 @@ const GuestRoute = ({ children }) => {
 }
 
 export default function App() {
+  const { user } = useAuth()
+  const showFooter = user // Only show footer when user is logged in
+
   return (
     <BrowserRouter>
       <Routes>
@@ -50,6 +54,7 @@ export default function App() {
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      {showFooter && <Footer />}
     </BrowserRouter>
   )
 }

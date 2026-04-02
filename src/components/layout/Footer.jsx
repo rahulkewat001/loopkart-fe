@@ -1,11 +1,26 @@
 import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import './Footer.css';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const [showBackToTop, setShowBackToTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 300);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
-    <footer className="footer">
+    <>
+      <footer className="footer">
       <div className="footer-container">
         {/* Main Footer Content */}
         <div className="footer-content">
@@ -111,7 +126,16 @@ export default function Footer() {
             </div>
           </div>
         </div>
-      </div>
-    </footer>
+      </footer>
+
+      {/* Back to Top Button */}
+      <button 
+        className={`back-to-top ${showBackToTop ? 'visible' : ''}`}
+        onClick={scrollToTop}
+        aria-label="Back to top"
+      >
+        ↑
+      </button>
+    </>
   );
 }

@@ -19,7 +19,7 @@ export const SocketProvider = ({ children, token }) => {
 
     if (!token) return;
 
-    const socket = io('http://localhost:5000', {
+    const socket = io('https://loopkart-be.onrender.com', {
       auth:       { token },
       transports: ['websocket', 'polling'],
       reconnectionAttempts: 5,

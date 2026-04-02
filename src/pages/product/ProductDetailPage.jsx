@@ -7,6 +7,9 @@ import { useToast } from '../../components/ui/Toast/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 import Navbar from '../../components/layout/Navbar';
 import Button from '../../components/ui/Button';
+import VerificationBadge from '../../components/ui/VerificationBadge';
+import TrustScore from '../../components/ui/TrustScore';
+import PriceHistory from '../../components/product/PriceHistory';
 import './ProductDetailPage.css';
 
 const Stars = ({ rating, interactive = false, onRate }) => {
@@ -39,6 +42,7 @@ export default function ProductDetailPage() {
   const { toast }                        = useToast();
 
   const [product, setProduct]       = useState(null);
+  const [seller, setSeller]         = useState(null);
   const [reviews, setReviews]       = useState([]);
   const [loading, setLoading]       = useState(true);
   const [activeImg, setActiveImg]   = useState(0);
@@ -54,6 +58,12 @@ export default function ProductDetailPage() {
     ]).then(([p, r]) => {
       setProduct(p.data.product);
       setReviews(r.data.reviews);
+      // Fetch seller info if it's a seller listing
+      if (p.data.product.seller) {
+        api.get(`/profile/${p.data.product.seller}`).then(res => {
+          setSeller(res.data);
+        }).catch(() => {});
+      }
     }).catch(() => navigate('/')).finally(() => setLoading(false));
   }, [id]);
 
@@ -216,22 +226,35 @@ export default function ProductDetailPage() {
               ))}
             </div>
 
-            {product.isSellerListing && (
+            {product.isSellerListing && seller && (
               <div className="pdp-seller">
                 <p className="pdp-seller__label">🏪 Sold by</p>
                 <div className="pdp-seller__card">
                   <div className="pdp-seller__avatar">{product.sellerName?.[0]?.toUpperCase()}</div>
-                  <div>
+                  <div className="pdp-seller__info">
                     <p className="pdp-seller__name">{product.sellerName}</p>
+                    <div className="pdp-seller__badges">
+                      <VerificationBadge type="email" verified={seller.verification?.email} size="sm" />
+                      <VerificationBadge type="phone" verified={seller.verification?.phone} size="sm" />
+                      <VerificationBadge type="identity" verified={seller.verification?.identity} size="sm" />
+                    </div>
                     <p className="pdp-seller__condition">
                       Condition: <strong>{product.condition?.replace('_', ' ')}</strong>
                     </p>
                   </div>
+                  {seller.trustScore > 0 && (
+                    <TrustScore score={seller.trustScore} size="sm" showLabel={false} />
+                  )}
                 </div>
               </div>
             )}
           </div>
         </div>
+
+        {/* ── Price History ── */}
+        {product.priceHistory && product.priceHistory.length > 1 && (
+          <PriceHistory priceHistory={product.priceHistory} />
+        )}
 
         {/* ── Reviews ── */}
         <div className="reviews-section">

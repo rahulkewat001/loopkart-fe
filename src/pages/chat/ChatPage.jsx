@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
 import api from '../../utils/api';
 import Navbar from '../../components/layout/Navbar';
+import ChatTemplates from '../../components/chat/ChatTemplates';
 import './ChatPage.css';
 
 const formatTime = (date) => {
@@ -276,6 +277,10 @@ export default function ChatPage() {
 
               {/* Input */}
               <form className="chat-input-bar" onSubmit={handleSend}>
+                <ChatTemplates 
+                  onSelectTemplate={(template) => setText(template)}
+                  productPrice={activeChat?.productPrice || 5000}
+                />
                 <input
                   className="chat-input"
                   placeholder="Type a message..."

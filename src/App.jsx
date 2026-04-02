@@ -14,6 +14,7 @@ import AdminPage            from './pages/admin/AdminPage'
 import BecomeSeller         from './pages/seller/BecomeSeller'
 import SellerDashboard      from './pages/seller/SellerDashboard'
 import ChatPage             from './pages/chat/ChatPage'
+import SavedSearches        from './components/search/SavedSearches'
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth()
@@ -51,6 +52,7 @@ export default function App() {
         <Route path="/seller/dashboard"  element={<PrivateRoute><SellerDashboard /></PrivateRoute>} />
         <Route path="/chat"              element={<PrivateRoute><ChatPage /></PrivateRoute>} />
         <Route path="/chat/:chatId"      element={<PrivateRoute><ChatPage /></PrivateRoute>} />
+        <Route path="/saved-searches"    element={<PrivateRoute><SavedSearches /></PrivateRoute>} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

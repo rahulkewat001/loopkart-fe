@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   ShoppingCart, Search, Menu, X, Bell, Sun, Moon, MessageCircle, 
-  Heart, User, Package, Settings, Store, Rocket, LogOut 
+  Heart, User, Package, Settings, Store, Rocket, LogOut, Bookmark 
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
@@ -144,6 +144,7 @@ export default function Navbar({ onSearch }) {
                 <div className="navbar__dropdown-divider" />
                 <Link to="/profile"  className="navbar__dropdown-item" onClick={() => setDropOpen(false)}><User size={16} /> My Profile</Link>
                 <Link to="/orders"   className="navbar__dropdown-item" onClick={() => setDropOpen(false)}><Package size={16} /> My Orders</Link>
+                <Link to="/saved-searches" className="navbar__dropdown-item" onClick={() => setDropOpen(false)}><Bookmark size={16} /> Saved Searches</Link>
                 <Link to="/chat"     className="navbar__dropdown-item" onClick={() => setDropOpen(false)}><MessageCircle size={16} /> Messages</Link>
                 <Link to="/wishlist" className="navbar__dropdown-item" onClick={() => setDropOpen(false)}><Heart size={16} /> Wishlist {wishCount > 0 && `(${wishCount})`}</Link>
                 <Link to="/cart"     className="navbar__dropdown-item" onClick={() => setDropOpen(false)}><ShoppingCart size={16} /> Cart {itemCount > 0 && `(${itemCount})`}</Link>
@@ -170,6 +171,7 @@ export default function Navbar({ onSearch }) {
           </form>
           <Link to="/profile"  className="navbar__mobile-item" onClick={() => setMenuOpen(false)}><User size={16} /> My Profile</Link>
           <Link to="/orders"   className="navbar__mobile-item" onClick={() => setMenuOpen(false)}><Package size={16} /> My Orders</Link>
+          <Link to="/saved-searches" className="navbar__mobile-item" onClick={() => setMenuOpen(false)}><Bookmark size={16} /> Saved Searches</Link>
           <Link to="/wishlist" className="navbar__mobile-item" onClick={() => setMenuOpen(false)}><Heart size={16} /> Wishlist</Link>
           <Link to="/cart"     className="navbar__mobile-item" onClick={() => setMenuOpen(false)}><ShoppingCart size={16} /> Cart {itemCount > 0 && `(${itemCount})`}</Link>
           {user?.role === 'admin'  && <Link to="/admin"            className="navbar__mobile-item" onClick={() => setMenuOpen(false)}><Settings size={16} /> Admin Panel</Link>}

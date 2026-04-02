@@ -1,5 +1,6 @@
 .chat-templates {
   position: relative;
+  z-index: 10;
 }
 
 .chat-templates__toggle {
@@ -14,24 +15,38 @@
   justify-content: center;
   font-size: 18px;
   transition: all 0.2s;
+  flex-shrink: 0;
 }
 
 .chat-templates__toggle:hover {
   background: #cc0000;
   border-color: #cc0000;
+  color: #fff;
   transform: scale(1.05);
 }
 
 .chat-templates__dropdown {
   position: absolute;
-  bottom: 45px;
-  right: 0;
-  width: 280px;
+  bottom: 50px;
+  left: 0;
+  width: 300px;
   background: #fff;
-  border: 1px solid #ddd;
+  border: 2px solid #cc0000;
   border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-  z-index: 100;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  z-index: 1000;
+  animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .chat-templates__header {

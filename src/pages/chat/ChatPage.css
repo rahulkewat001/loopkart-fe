@@ -116,11 +116,17 @@
 
 /* ─── Messages Area ──────────────────────────────────────────── */
 .chat-messages {
-  flex: 1; overflow-y: auto; padding: 20px;
-  display: flex; flex-direction: column; gap: 4px;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   background:
     radial-gradient(ellipse at 10% 20%, rgba(168,85,247,0.03) 0%, transparent 50%),
     var(--bg);
+  scroll-behavior: smooth;
 }
 
 .chat-date-divider {

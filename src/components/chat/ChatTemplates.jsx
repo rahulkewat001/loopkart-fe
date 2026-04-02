@@ -1,8 +1,25 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import './ChatTemplates.css';
 
 const ChatTemplates = ({ onSelectTemplate, productPrice }) => {
   const [showTemplates, setShowTemplates] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowTemplates(false);
+      }
+    };
+
+    if (showTemplates) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showTemplates]);
 
   const templates = [
     { id: 1, text: 'Is this still available?', icon: '❓' },
@@ -15,11 +32,23 @@ const ChatTemplates = ({ onSelectTemplate, productPrice }) => {
     { id: 8, text: 'When can I come to see it?', icon: '📅' },
   ];
 
+  const handleTemplateClick = (text) => {
+    console.log('Template clicked:', text);
+    onSelectTemplate(text);
+    setShowTemplates(false);
+  };
+
   return (
-    <div className="chat-templates">
+    <div className="chat-templates" ref={dropdownRef}>
       <button 
+        type="button"
         className="chat-templates__toggle"
-        onClick={() => setShowTemplates(!showTemplates)}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('Toggle clicked, current state:', showTemplates);
+          setShowTemplates(!showTemplates);
+        }}
         title="Quick messages"
       >
         ⚡
@@ -32,10 +61,12 @@ const ChatTemplates = ({ onSelectTemplate, productPrice }) => {
             {templates.map(template => (
               <button
                 key={template.id}
+                type="button"
                 className="chat-templates__item"
-                onClick={() => {
-                  onSelectTemplate(template.text);
-                  setShowTemplates(false);
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleTemplateClick(template.text);
                 }}
               >
                 <span className="chat-templates__icon">{template.icon}</span>

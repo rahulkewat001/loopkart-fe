@@ -1,0 +1,153 @@
+/* ===== RIPPLE EFFECT STYLES ===== */
+
+/* 
+ * Container for buttons that will have ripple effect
+ * This class should be added to any button you want to have the ripple effect
+ */
+.ripple-container {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  /* Ensure the button content stays above the ripple */
+  z-index: 1;
+}
+
+/* 
+ * The actual ripple element that gets created dynamically
+ * This creates the expanding circle effect
+ */
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  /* Soft purple color with transparency for the ripple */
+  background-color: rgba(147, 51, 234, 0.3);
+  /* Start invisible and small */
+  transform: scale(0);
+  opacity: 1;
+  /* Pointer events disabled so it doesn't interfere with button clicks */
+  pointer-events: none;
+  /* Z-index to ensure ripple appears behind button text */
+  z-index: 0;
+  
+  /* 
+   * Animation for the ripple expansion and fade
+   * - transform: grows from 0 to full size
+   * - opacity: fades from visible to invisible
+   */
+  animation: ripple-animation 0.6s ease-out forwards;
+}
+
+/* 
+ * Keyframe animation for the ripple effect
+ * Creates smooth expansion and fade out
+ */
+@keyframes ripple-animation {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  70% {
+    transform: scale(4);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* 
+ * Enhanced styles for common button types in e-commerce
+ * These make the ripple effect work better with different button styles
+ */
+
+/* Primary buttons (like "Buy Now", "Add to Cart") */
+.btn-primary.ripple-container {
+  background: linear-gradient(135deg, #8b5cf6, #a855f7);
+  border: none;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-primary.ripple-container:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+/* Secondary buttons (like "Make an Offer", "Contact Seller") */
+.btn-secondary.ripple-container {
+  background: transparent;
+  border: 2px solid #8b5cf6;
+  color: #8b5cf6;
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary.ripple-container:hover {
+  background: rgba(139, 92, 246, 0.1);
+  transform: translateY(-1px);
+}
+
+/* Ghost buttons (subtle actions) */
+.btn-ghost.ripple-container {
+  background: transparent;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  color: #6b7280;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 400;
+  transition: all 0.2s ease;
+}
+
+.btn-ghost.ripple-container:hover {
+  border-color: #8b5cf6;
+  color: #8b5cf6;
+}
+
+/* 
+ * Ensure button text and icons stay above the ripple
+ * This prevents the ripple from covering the button content
+ */
+.ripple-container > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* 
+ * Optional: Disable ripple effect on mobile for better performance
+ * Uncomment this if you want to disable ripples on touch devices
+ */
+/*
+@media (hover: none) and (pointer: coarse) {
+  .ripple-container {
+    overflow: visible;
+  }
+  
+  .ripple {
+    display: none;
+  }
+}
+*/
+
+/* 
+ * Dark mode support for the ripple effect
+ * Adjusts ripple color for dark backgrounds
+ */
+[data-theme="dark"] .ripple {
+  background-color: rgba(196, 181, 253, 0.4);
+}
+
+/* 
+ * Accessibility: Reduce motion for users who prefer it
+ * Respects user's motion preferences
+ */
+@media (prefers-reduced-motion: reduce) {
+  .ripple {
+    animation-duration: 0.01ms;
+  }
+}

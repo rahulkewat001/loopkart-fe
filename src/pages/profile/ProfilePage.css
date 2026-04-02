@@ -1,0 +1,19 @@
+.profile-page  { min-height: 100vh; background: var(--bg); }
+.profile-inner { padding: 40px 24px; max-width: 600px; }
+
+.profile-header { display: flex; align-items: center; gap: 24px; margin-bottom: 36px; }
+.profile-avatar { width: 80px; height: 80px; border-radius: 50%; background: var(--gradient-primary); color: #fff; font-family: var(--font-display); font-size: 28px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: var(--shadow-neon); border: 2px solid rgba(168,85,247,0.3); }
+.profile-name   { font-family: var(--font-display); font-size: 24px; font-weight: 700; color: var(--text-primary); }
+.profile-email  { font-size: 14px; color: var(--text-secondary); margin-top: 3px; }
+.profile-joined { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+.profile-tabs { display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 0; }
+.profile-tab  { padding: 10px 20px; font-size: 14px; font-weight: 500; color: var(--text-muted); background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all var(--transition); font-family: var(--font-body); }
+.profile-tab:hover { color: var(--primary); }
+.profile-tab--active { color: var(--accent); border-bottom-color: var(--primary); font-weight: 600; }
+
+.profile-msg { padding: 12px 16px; border-radius: var(--radius-md); font-size: 14px; margin-bottom: 20px; }
+.profile-msg--success { background: var(--success-bg); border: 1px solid rgba(52,211,153,0.2); color: var(--success); }
+.profile-msg--error   { background: var(--error-bg);   border: 1px solid rgba(248,113,113,0.2); color: var(--error); }
+
+.profile-form { display: flex; flex-direction: column; gap: 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px; box-shadow: var(--shadow-card); }

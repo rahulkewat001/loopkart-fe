@@ -36,6 +36,7 @@ export default function ChatPage() {
   const [typingUsers, setTypingUsers] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
   const messagesEndRef = useRef(null);
+  const prevMessagesLength = useRef(0);
   const typingTimeout  = useRef(null);
 
   // Load all chats
@@ -61,11 +62,18 @@ export default function ChatPage() {
   useEffect(() => {
     if (!socket || !chatId) return;
 
+    console.log('Joining chat:', chatId);
     socket.emit('join_chat', chatId);
 
     const handleNewMessage = ({ chatId: cId, message }) => {
+      console.log('New message received:', message);
       if (cId === chatId) {
-        setMessages((prev) => [...prev, message]);
+        setMessages((prev) => {
+          // Avoid duplicates
+          const exists = prev.some(m => m._id === message._id);
+          if (exists) return prev;
+          return [...prev, message];
+        });
         socket.emit('mark_read', { chatId });
       }
       // Update last message in chat list
@@ -87,9 +95,13 @@ export default function ChatPage() {
     };
   }, [socket, chatId]);
 
-  // Auto scroll to bottom
+  // Auto scroll to bottom only when new messages arrive
+  const prevMessagesLength = useRef(messages.length);
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messages.length > prevMessagesLength.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+    prevMessagesLength.current = messages.length;
   }, [messages]);
 
   const getOtherParticipant = useCallback((chat) => {
@@ -99,27 +111,37 @@ export default function ChatPage() {
   const handleSend = async (e) => {
     e.preventDefault();
     if (!text.trim() || sending) return;
-    setSending(true);
-
-    // Optimistic update
-    const optimistic = { _id: Date.now(), sender: user._id, senderName: user.name, text: text.trim(), createdAt: new Date(), read: false };
-    setMessages((prev) => [...prev, optimistic]);
+    
     const sentText = text.trim();
     setText('');
+    setSending(true);
 
     try {
       if (socket?.connected) {
+        console.log('Sending message via socket:', sentText);
         socket.emit('send_message', { chatId, text: sentText });
         socket.emit('typing', { chatId, isTyping: false });
       } else {
-        // Fallback to REST
-        await api.post(`/chats/${chatId}/messages`, { text: sentText });
+        console.log('Socket not connected, using REST API');
+        const { data } = await api.post(`/chats/${chatId}/messages`, { text: sentText });
+        // Manually add message if socket not working
+        const newMsg = {
+          _id: data.message._id,
+          sender: user._id,
+          senderName: user.name,
+          text: sentText,
+          createdAt: new Date(),
+          read: false
+        };
+        setMessages((prev) => [...prev, newMsg]);
       }
       setChats((prev) => prev.map((c) => c._id === chatId ? { ...c, lastMessage: sentText, lastMessageAt: new Date() } : c));
-    } catch {
-      setMessages((prev) => prev.filter((m) => m._id !== optimistic._id));
+    } catch (error) {
+      console.error('Failed to send message:', error);
       setText(sentText);
-    } finally { setSending(false); }
+    } finally {
+      setSending(false);
+    }
   };
 
   const handleTyping = (e) => {

@@ -21,18 +21,37 @@ export const SocketProvider = ({ children, token }) => {
 
     const socket = io('http://localhost:5000', {
       auth:       { token },
-      transports: ['websocket'],
+      transports: ['websocket', 'polling'],
       reconnectionAttempts: 5,
-      reconnectionDelay:    2000,
+      reconnectionDelay:    1000,
+      timeout: 10000,
     });
 
     socketRef.current = socket;
 
-    socket.on('connect',      ()      => setConnected(true));
-    socket.on('disconnect',   ()      => setConnected(false));
-    socket.on('online_users', (users) => setOnlineUsers(users));
-    socket.on('user_online',  (id)    => setOnlineUsers((prev) => [...new Set([...prev, id])]));
-    socket.on('user_offline', (id)    => setOnlineUsers((prev) => prev.filter((u) => u !== id)));
+    socket.on('connect', () => {
+      console.log('✅ Socket connected:', socket.id);
+      setConnected(true);
+    });
+    socket.on('disconnect', () => {
+      console.log('❌ Socket disconnected');
+      setConnected(false);
+    });
+    socket.on('connect_error', (error) => {
+      console.error('Socket connection error:', error);
+    });
+    socket.on('online_users', (users) => {
+      console.log('👥 Online users:', users);
+      setOnlineUsers(users);
+    });
+    socket.on('user_online', (id) => {
+      console.log('🟢 User online:', id);
+      setOnlineUsers((prev) => [...new Set([...prev, id])]);
+    });
+    socket.on('user_offline', (id) => {
+      console.log('⚫ User offline:', id);
+      setOnlineUsers((prev) => prev.filter((u) => u !== id));
+    });
 
     return () => {
       socket.disconnect();

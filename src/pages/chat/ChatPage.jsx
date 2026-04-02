@@ -36,7 +36,6 @@ export default function ChatPage() {
   const [typingUsers, setTypingUsers] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
   const messagesEndRef = useRef(null);
-  const prevMessagesLength = useRef(0);
   const typingTimeout  = useRef(null);
 
   // Load all chats
@@ -51,6 +50,8 @@ export default function ChatPage() {
   useEffect(() => {
     if (!chatId) return;
     api.get(`/chats/${chatId}`).then(({ data }) => {
+      console.log('Chat loaded:', data.chat);
+      console.log('Participants:', data.chat.participants);
       setActiveChat(data.chat);
       setMessages(data.chat.messages || []);
       // Update unread count in list
@@ -238,6 +239,9 @@ export default function ChatPage() {
               {activeChat && (() => {
                 const other  = getOtherParticipant(activeChat);
                 const online = isOnline(other?._id);
+                console.log('Other user:', other);
+                console.log('Other user ID:', other?._id);
+                console.log('Is online:', online);
                 return (
                   <div className="chat-header">
                     <button className="chat-header__back" onClick={() => navigate('/chat')}>←</button>

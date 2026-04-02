@@ -59,7 +59,12 @@ export const SocketProvider = ({ children, token }) => {
     };
   }, [token]);
 
-  const isOnline = useCallback((userId) => onlineUsers.includes(userId?.toString()), [onlineUsers]);
+  const isOnline = useCallback((userId) => {
+    const result = onlineUsers.includes(userId?.toString());
+    console.log(`Checking if user ${userId} is online:`, result);
+    console.log('All online users:', onlineUsers);
+    return result;
+  }, [onlineUsers]);
 
   return (
     <SocketContext.Provider value={{ socket: socketRef.current, onlineUsers, isOnline, connected }}>

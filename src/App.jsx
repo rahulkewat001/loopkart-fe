@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 import Footer from './components/layout/Footer'
+import TestTemplates        from './pages/TestTemplates'
 import LoginPage            from './pages/auth/LoginPage'
 import RegisterPage         from './pages/auth/RegisterPage'
 import ForgotPasswordPage   from './pages/auth/ForgotPasswordPage'
@@ -53,6 +54,7 @@ export default function App() {
         <Route path="/chat"              element={<PrivateRoute><ChatPage /></PrivateRoute>} />
         <Route path="/chat/:chatId"      element={<PrivateRoute><ChatPage /></PrivateRoute>} />
         <Route path="/saved-searches"    element={<PrivateRoute><SavedSearches /></PrivateRoute>} />
+        <Route path="/test-templates"    element={<TestTemplates />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

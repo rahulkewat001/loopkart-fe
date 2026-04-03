@@ -10,6 +10,7 @@ import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useToast } from '../../components/ui/Toast/ToastContext';
 import Navbar from '../../components/layout/Navbar';
+import HeroSlider from '../../components/layout/HeroSlider';
 import './HomePage.css';
 
 const categories = [
@@ -134,52 +135,8 @@ export default function HomePage() {
     <div className="home">
       <Navbar onSearch={(q) => { setSearchQuery(q); document.getElementById('products-section')?.scrollIntoView({ behavior: 'smooth' }); }} />
 
-      {/* ── Hero ─────────────────────────────────────────────── */}
-      <section className="hero">
-        <div className="container hero__inner">
-          <div className="hero__content animate-fadeUp">
-            <span className="hero__tag"><Zap size={13} /> New Arrivals Every Day</span>
-            <h1 className="hero__title">
-              Shop Smart,<br />
-              <span className="hero__title-accent">Live Better</span>
-            </h1>
-            <p className="hero__desc">
-              Discover thousands of products at unbeatable prices. From electronics to fashion — everything you need, delivered fast.
-            </p>
-            <div className="hero__cta">
-              <button className="btn-hero-primary" onClick={() => document.getElementById('products-section').scrollIntoView({ behavior: 'smooth' })}><ShoppingBag size={16} /> Shop Now</button>
-              <button className="btn-hero-ghost" onClick={() => navigate('/cart')}><ShoppingCart size={16} /> View Cart</button>
-            </div>
-            <div className="hero__stats">
-              <div className="hero__stat"><strong>50K+</strong><span>Products</span></div>
-              <div className="hero__stat-divider" />
-              <div className="hero__stat"><strong>2M+</strong><span>Customers</span></div>
-              <div className="hero__stat-divider" />
-              <div className="hero__stat"><strong>4.8★</strong><span>Rating</span></div>
-            </div>
-          </div>
-          <div className="hero__visual animate-fadeIn">
-            <div className="hero__blob" />
-            <div className="hero__emoji-grid">
-              {[
-                { img: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&q=80', emoji: '🎧' },
-                { img: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&q=80', emoji: '⌚' },
-                { img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&q=80',   emoji: '👟' },
-                { img: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=200&q=80', emoji: '✨' },
-                { img: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=200&q=80', emoji: '⌨️' },
-                { img: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=200&q=80', emoji: '📚' },
-                { img: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=200&q=80', emoji: '👕' },
-                { img: 'https://images.unsplash.com/photo-1602028915047-37269d1a73f7?w=200&q=80', emoji: '🕯️' },
-              ].map((item, i) => (
-                <div key={i} className="hero__emoji-card" style={{ animationDelay: `${i * 0.08}s` }}>
-                  <img src={item.img} alt="product" onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='block'; }} />
-                  <span style={{ display: 'none' }}>{item.emoji}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* ── Premium Hero Slider ─────────────────────────────── */}
+      <HeroSlider />
 
       {/* ── Categories ───────────────────────────────────────── */}
       <section className="section">

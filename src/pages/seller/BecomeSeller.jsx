@@ -17,12 +17,32 @@ const PERKS = [
   { icon: '🌍', title: 'Reach Millions',      desc: 'Access LoopKart\'s growing customer base instantly' },
 ];
 
+const CATEGORIES = [
+  { value: 'Electronics', icon: '💻', desc: 'Phones, Laptops, Cameras' },
+  { value: 'Fashion', icon: '👕', desc: 'Clothes, Shoes, Accessories' },
+  { value: 'Home & Living', icon: '🏠', desc: 'Furniture, Decor, Appliances' },
+  { value: 'Beauty', icon: '💄', desc: 'Makeup, Skincare, Perfumes' },
+  { value: 'Sports', icon: '⚽', desc: 'Gym, Yoga, Outdoor Gear' },
+  { value: 'Books', icon: '📚', desc: 'Novels, Textbooks, Comics' },
+  { value: 'Toys', icon: '🧸', desc: 'Kids Toys, Games, Puzzles' },
+  { value: 'Kitchen', icon: '🍳', desc: 'Cookware, Utensils, Appliances' },
+  { value: 'Accessories', icon: '⌚', desc: 'Watches, Bags, Wallets' },
+  { value: 'Grocery', icon: '🛒', desc: 'Food, Beverages, Snacks' },
+];
+
 export default function BecomeSeller() {
   const { user, updateUser } = useAuth();
   const { toast }  = useToast();
   const navigate   = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ shopName: '', shopDesc: '', phone: '', city: '', state: '' });
+  const [form, setForm] = useState({ 
+    shopName: '', 
+    shopDesc: '', 
+    phone: '', 
+    city: '', 
+    state: '',
+    categories: [] // Selected categories
+  });
   const [errors, setErrors] = useState({});
 
   if (user?.role === 'seller' || user?.role === 'admin') {
@@ -35,7 +55,18 @@ export default function BecomeSeller() {
     if (!form.phone.trim() || !/^\d{10}$/.test(form.phone)) e.phone = 'Valid 10-digit phone required';
     if (!form.city.trim())  e.city  = 'City is required';
     if (!form.state.trim()) e.state = 'State is required';
+    if (form.categories.length === 0) e.categories = 'Select at least one category';
     return e;
+  };
+
+  const toggleCategory = (cat) => {
+    setForm(p => ({
+      ...p,
+      categories: p.categories.includes(cat)
+        ? p.categories.filter(c => c !== cat)
+        : [...p.categories, cat]
+    }));
+    setErrors(e => ({ ...e, categories: null }));
   };
 
   const handleSubmit = async (e) => {
@@ -80,6 +111,31 @@ export default function BecomeSeller() {
                   <label>Shop Description <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>(optional)</span></label>
                   <textarea className="seller-textarea" placeholder="Tell buyers about your shop..." value={form.shopDesc} onChange={(e) => setForm((p) => ({ ...p, shopDesc: e.target.value }))} rows={3} />
                 </div>
+                
+                {/* Category Selection */}
+                <div className="seller-form__field">
+                  <label>What will you sell? <span style={{ color: 'var(--accent-primary)' }}>*</span></label>
+                  <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12 }}>Select categories you want to sell in (choose multiple)</p>
+                  <div className="category-selector">
+                    {CATEGORIES.map((cat) => (
+                      <button
+                        key={cat.value}
+                        type="button"
+                        className={`category-chip ${form.categories.includes(cat.value) ? 'category-chip--active' : ''}`}
+                        onClick={() => toggleCategory(cat.value)}
+                      >
+                        <span className="category-chip__icon">{cat.icon}</span>
+                        <div className="category-chip__text">
+                          <strong>{cat.value}</strong>
+                          <small>{cat.desc}</small>
+                        </div>
+                        {form.categories.includes(cat.value) && <span className="category-chip__check">✓</span>}
+                      </button>
+                    ))}
+                  </div>
+                  {errors.categories && <p className="input-error">{errors.categories}</p>}
+                </div>
+
                 <Input label="Phone Number" name="phone" placeholder="9876543210" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} error={errors.phone} required />
                 <div className="seller-form__row">
                   <Input label="City" name="city" placeholder="Mumbai" value={form.city} onChange={(e) => setForm((p) => ({ ...p, city: e.target.value }))} error={errors.city} required />

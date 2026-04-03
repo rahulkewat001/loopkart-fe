@@ -185,6 +185,76 @@
 .slg-input:focus, .slg-textarea:focus { border-color: var(--primary); box-shadow: var(--shadow-glow); background: var(--bg-elevated); }
 .slg-textarea { resize: vertical; }
 
+/* ─── Category Selector ──────────────────────────────────────── */
+.category-selector {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.category-chip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-muted);
+  cursor: pointer;
+  transition: all var(--transition);
+  text-align: left;
+  position: relative;
+}
+.category-chip:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+}
+.category-chip--active {
+  border-color: var(--accent);
+  background: var(--primary-light);
+  box-shadow: 0 0 0 3px rgba(168,85,247,0.1);
+}
+.category-chip__icon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+.category-chip__text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.category-chip__text strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.category-chip__text small {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.category-chip__check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+.input-error {
+  font-size: 12px;
+  color: var(--error);
+  margin-top: 4px;
+}
+
 .seller-form-actions { display: flex; gap: 12px; margin-top: 20px; }
 
 /* ─── Listings Grid ──────────────────────────────────────────── */

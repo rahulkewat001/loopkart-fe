@@ -150,6 +150,12 @@ export default function CartPage() {
           contact: address.phone,
         },
         theme: { color: '#d6b174' },
+        method: {
+          upi: true,
+          card: true,
+          netbanking: true,
+          wallet: true,
+        },
         handler: async (response) => {
           try {
             console.log('Payment successful, verifying...');

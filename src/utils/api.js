@@ -59,19 +59,26 @@ api.interceptors.response.use(
       try {
         const refreshToken = localStorage.getItem('refreshToken');
         if (!refreshToken) {
+          console.log('No refresh token found, redirecting to login');
+          localStorage.clear();
+          window.location.href = '/?auth=login';
           return Promise.reject(error);
         }
 
+        console.log('Attempting to refresh token...');
         const { data } = await axios.post(
           `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/refresh-token`,
-          { refreshToken }
+          { refreshToken },
+          { withCredentials: true }
         );
+        console.log('Token refreshed successfully');
         localStorage.setItem('accessToken', data.accessToken);
         localStorage.setItem('refreshToken', data.refreshToken);
         processQueue(null, data.accessToken);
         original.headers.Authorization = `Bearer ${data.accessToken}`;
         return api(original);
       } catch (err) {
+        console.error('Token refresh failed:', err);
         processQueue(err, null);
         localStorage.clear();
         window.location.href = '/?auth=login';

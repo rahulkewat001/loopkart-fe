@@ -17,6 +17,16 @@ import {
   SunMedium,
   UserRound,
   X,
+  Laptop,
+  Shirt,
+  Sparkles,
+  Home,
+  Dumbbell,
+  BookOpen,
+  Baby,
+  UtensilsCrossed,
+  ShoppingBasket,
+  Watch,
 } from 'lucide-react';
 import api from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
@@ -59,6 +69,20 @@ const compactNumber = new Intl.NumberFormat('en-IN', {
 });
 
 const conditionLabel = (condition) => condition?.replace('_', ' ') || 'good';
+
+// Category icon mapping
+const categoryIcons = {
+  'Electronics': Laptop,
+  'Fashion': Shirt,
+  'Beauty': Sparkles,
+  'Home & Living': Home,
+  'Sports': Dumbbell,
+  'Books': BookOpen,
+  'Toys': Baby,
+  'Kitchen': UtensilsCrossed,
+  'Grocery': ShoppingBasket,
+  'Accessories': Watch,
+};
 
 function GuestLanding({ onAuthenticated }) {
   const navigate = useNavigate();
@@ -542,30 +566,35 @@ export default function HomePage() {
           </RevealOnScroll>
         ) : !selectedCategory ? (
           <div className="category-grid">
-            {categorySummaries.map((category, index) => (
-              <RevealOnScroll
-                key={category.name}
-                as="button"
-                className="category-card"
-                delay={index * 70}
-                onClick={() => {
-                  setSelectedCategory(category.name);
-                  setSearchQuery('');
-                }}
-              >
-                <img className="category-card__image" src={category.image} alt={category.name} />
-                <div className="category-card__overlay" />
-                <div className="category-card__content">
-                  <p className="category-card__eyebrow">{compactNumber.format(category.totalViews)} views tracked</p>
-                  <h3>{category.name}</h3>
-                  <p>{category.topProduct?.manufacturer || 'LoopKart'} • {category.count} products live</p>
-                </div>
-                <span className="category-card__action">
-                  Open category
-                  <ArrowRight size={15} />
-                </span>
-              </RevealOnScroll>
-            ))}
+            {categorySummaries.map((category, index) => {
+              const CategoryIcon = categoryIcons[category.name] || PackageCheck;
+              return (
+                <RevealOnScroll
+                  key={category.name}
+                  as="button"
+                  className="category-card"
+                  delay={index * 70}
+                  onClick={() => {
+                    setSelectedCategory(category.name);
+                    setSearchQuery('');
+                  }}
+                >
+                  <div className="category-card__icon-wrapper">
+                    <CategoryIcon size={48} className="category-card__icon" />
+                  </div>
+                  <div className="category-card__overlay" />
+                  <div className="category-card__content">
+                    <p className="category-card__eyebrow">{compactNumber.format(category.totalViews)} views tracked</p>
+                    <h3>{category.name}</h3>
+                    <p>{category.topProduct?.manufacturer || 'LoopKart'} • {category.count} products live</p>
+                  </div>
+                  <span className="category-card__action">
+                    Open category
+                    <ArrowRight size={15} />
+                  </span>
+                </RevealOnScroll>
+              );
+            })}
           </div>
         ) : (
           <>

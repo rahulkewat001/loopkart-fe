@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
@@ -28,6 +28,22 @@ export default function CartPage() {
 
   const finalTotal = Math.max(0, total - discount);
 
+  // Debug logging on mount
+  useEffect(() => {
+    console.log('CartPage mounted');
+    console.log('Initial items:', items);
+    console.log('Initial step:', step);
+  }, []);
+
+  // Reset to cart step if items become empty
+  useEffect(() => {
+    console.log('useEffect triggered - items.length:', items.length, 'step:', step);
+    if (items.length === 0 && step !== 'cart') {
+      console.log('Resetting to cart step because items are empty');
+      setStep('cart');
+    }
+  }, [items.length, step]);
+
   const applyCoupon = async () => {
     if (!coupon.trim()) return;
     try {
@@ -45,6 +61,23 @@ export default function CartPage() {
 
   const removeCoupon = () => { setDiscount(0); setAppliedCode(''); setCouponMsg(''); setCoupon(''); };
 
+  // Prevent proceeding if cart is empty
+  const handleProceedToCheckout = () => {
+    console.log('Proceed to Checkout clicked');
+    console.log('Current items:', items);
+    console.log('Items length:', items.length);
+    console.log('Current step:', step);
+    
+    if (items.length === 0) {
+      console.log('Cart is empty, showing warning');
+      toast('Your cart is empty', 'warning');
+      return;
+    }
+    
+    console.log('Setting step to address');
+    setStep('address');
+  };
+
   const validateAddress = () => {
     const { fullName, phone, street, city, state, pincode } = address;
     if (!fullName || !phone || !street || !city || !state || !pincode) {
@@ -59,17 +92,28 @@ export default function CartPage() {
   const placeCODOrder = async () => {
     setLoading(true);
     try {
+      console.log('Placing COD order with data:', {
+        items: items.map((i) => ({ product: i._id, name: i.name, emoji: i.emoji, price: i.price, quantity: i.quantity })),
+        totalAmount: finalTotal,
+        address,
+        couponCode: appliedCode || null,
+        discountAmount: discount,
+      });
+
       const { data } = await api.post('/orders', {
         items: items.map((i) => ({ product: i._id, name: i.name, emoji: i.emoji, price: i.price, quantity: i.quantity })),
         totalAmount: finalTotal, address,
         couponCode: appliedCode || null, discountAmount: discount,
       });
+
+      console.log('Order created successfully:', data);
       setOrderId(data.order._id);
       clearCart();
       setStep('success');
       toast('Order placed successfully! 🎉', 'success');
     } catch (err) {
       console.error('Order placement error:', err);
+      console.error('Error response:', err.response?.data);
       toast(err.response?.data?.message || 'Order failed. Please try again.', 'error');
     } finally { setLoading(false); }
   };
@@ -78,6 +122,7 @@ export default function CartPage() {
   const placeOnlineOrder = async () => {
     setLoading(true);
     try {
+      console.log('Creating online order...');
       // Step 1: Create order in our DB first
       const { data: orderData } = await api.post('/orders', {
         items: items.map((i) => ({ product: i._id, name: i.name, emoji: i.emoji, price: i.price, quantity: i.quantity })),
@@ -85,9 +130,11 @@ export default function CartPage() {
         couponCode: appliedCode || null, discountAmount: discount,
       });
       const dbOrderId = orderData.order._id;
+      console.log('Order created in DB:', dbOrderId);
 
       // Step 2: Create Razorpay payment order
       const { data: payData } = await api.post('/payment/create-order', { amount: finalTotal });
+      console.log('Razorpay order created:', payData.orderId);
 
       // Step 3: Open Razorpay checkout
       const options = {
@@ -102,9 +149,10 @@ export default function CartPage() {
           email:   user?.email,
           contact: address.phone,
         },
-        theme: { color: '#a855f7' },
+        theme: { color: '#d6b174' },
         handler: async (response) => {
           try {
+            console.log('Payment successful, verifying...');
             // Step 4: Verify payment
             await api.post('/payment/verify', {
               razorpay_order_id:   response.razorpay_order_id,
@@ -112,6 +160,7 @@ export default function CartPage() {
               razorpay_signature:  response.razorpay_signature,
               orderId:             dbOrderId,
             });
+            console.log('Payment verified successfully');
             setOrderId(dbOrderId);
             clearCart();
             setStep('success');
@@ -123,6 +172,7 @@ export default function CartPage() {
         },
         modal: {
           ondismiss: () => {
+            console.log('Payment modal dismissed');
             toast('Payment cancelled', 'info');
             setLoading(false);
           },
@@ -138,12 +188,16 @@ export default function CartPage() {
       rzp.open();
     } catch (err) {
       console.error('Payment initiation error:', err);
+      console.error('Error response:', err.response?.data);
       toast(err.response?.data?.message || 'Payment initiation failed', 'error');
       setLoading(false);
     }
   };
 
-  const handlePay = () => paymentMethod === 'cod' ? placeCODOrder() : placeOnlineOrder();
+  const handlePay = () => {
+    console.log('handlePay called, payment method:', paymentMethod);
+    return paymentMethod === 'cod' ? placeCODOrder() : placeOnlineOrder();
+  };
 
   // ─── Success Screen ────────────────────────────────────────────
   if (step === 'success') return (
@@ -248,7 +302,7 @@ export default function CartPage() {
                 {couponMsg && !appliedCode && <p className="cart-coupon__msg">{couponMsg}</p>}
                 <p className="cart-coupon__hint">Try: LOOP40 · SAVE100 · FIRST50</p>
               </div>
-              <Button fullWidth size="lg" onClick={() => navigate('/checkout')}>Proceed to Checkout →</Button>
+              <Button fullWidth size="lg" onClick={handleProceedToCheckout}>Proceed to Checkout →</Button>
             </div>
           </div>
 

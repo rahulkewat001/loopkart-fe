@@ -2,7 +2,12 @@
 .profile-inner { padding: 40px 24px; max-width: 600px; }
 
 .profile-header { display: flex; align-items: center; gap: 24px; margin-bottom: 36px; }
-.profile-avatar { width: 80px; height: 80px; border-radius: 50%; background: var(--gradient-primary); color: #fff; font-family: var(--font-display); font-size: 28px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: var(--shadow-neon); border: 2px solid rgba(168,85,247,0.3); }
+.profile-avatar-wrapper { position: relative; width: 80px; height: 80px; cursor: pointer; flex-shrink: 0; }
+.profile-avatar { width: 80px; height: 80px; border-radius: 50%; background: var(--gradient-primary); color: #fff; font-family: var(--font-display); font-size: 28px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-neon); border: 2px solid rgba(168,85,247,0.3); }
+.profile-avatar-img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--terra); box-shadow: var(--shadow-neon); }
+.profile-avatar-overlay { position: absolute; inset: 0; border-radius: 50%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; color: #fff; }
+.profile-avatar-wrapper:hover .profile-avatar-overlay { opacity: 1; }
+.profile-avatar-loading { position: absolute; bottom: -24px; left: 50%; transform: translateX(-50%); font-size: 11px; color: var(--terra); white-space: nowrap; font-weight: 500; }
 .profile-name   { font-family: var(--font-display); font-size: 24px; font-weight: 700; color: var(--text-primary); }
 .profile-email  { font-size: 14px; color: var(--text-secondary); margin-top: 3px; }
 .profile-joined { font-size: 12px; color: var(--text-muted); margin-top: 4px; }

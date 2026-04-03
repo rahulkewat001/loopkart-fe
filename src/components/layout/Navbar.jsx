@@ -23,8 +23,11 @@ export default function Navbar({ onSearch }) {
   const [dropOpen, setDropOpen]  = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [dark, setDark]          = useState(() => localStorage.getItem('theme') === 'dark');
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const dropRef  = useRef(null);
   const notifRef = useRef(null);
+  const searchRef = useRef(null);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
@@ -35,16 +38,43 @@ export default function Navbar({ onSearch }) {
     const handler = (e) => {
       if (dropRef.current  && !dropRef.current.contains(e.target))  setDropOpen(false);
       if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false);
+      if (searchRef.current && !searchRef.current.contains(e.target)) setShowSuggestions(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (search.trim().length < 2) {
+        setSuggestions([]);
+        setShowSuggestions(false);
+        return;
+      }
+      try {
+        const { data } = await fetch(`${import.meta.env.VITE_API_URL}/products?search=${search.trim()}&limit=5`).then(r => r.json());
+        setSuggestions(data.products || []);
+        setShowSuggestions(true);
+      } catch (err) {
+        setSuggestions([]);
+      }
+    };
+    const timer = setTimeout(fetchSuggestions, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
   const handleSearch = (e) => {
     e.preventDefault();
     if (!search.trim()) return;
+    setShowSuggestions(false);
     if (onSearch) { onSearch(search.trim()); }
     else { navigate(`/?search=${search.trim()}`); }
+  };
+
+  const handleSuggestionClick = (product) => {
+    setShowSuggestions(false);
+    setSearch('');
+    navigate(`/product/${product._id}`);
   };
   const handleLogout = async () => { await logout(); navigate('/login'); };
   const initials = user?.name ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) : '?';
@@ -57,10 +87,36 @@ export default function Navbar({ onSearch }) {
           <span className="navbar__logo-text">LoopKart</span>
         </Link>
 
-        <form className="navbar__search" onSubmit={handleSearch}>
-          <Search size={18} className="navbar__search-icon" />
-          <input type="text" placeholder="Search products..." value={search} onChange={(e) => setSearch(e.target.value)} className="navbar__search-input" />
-        </form>
+        <div className="navbar__search" ref={searchRef}>
+          <form onSubmit={handleSearch}>
+            <Search size={18} className="navbar__search-icon" />
+            <input 
+              type="text" 
+              placeholder="Search products..." 
+              value={search} 
+              onChange={(e) => setSearch(e.target.value)}
+              onFocus={() => search.trim().length >= 2 && setShowSuggestions(true)}
+              className="navbar__search-input" 
+            />
+          </form>
+          {showSuggestions && suggestions.length > 0 && (
+            <div className="search-suggestions animate-fadeIn">
+              {suggestions.map((product) => (
+                <div key={product._id} className="search-suggestion-item" onClick={() => handleSuggestionClick(product)}>
+                  <div className="search-suggestion-img">
+                    {product.emoji || product.image ? (
+                      product.emoji ? <span style={{ fontSize: '24px' }}>{product.emoji}</span> : <img src={product.image} alt={product.name} />
+                    ) : <Search size={20} />}
+                  </div>
+                  <div className="search-suggestion-info">
+                    <p className="search-suggestion-name">{product.name}</p>
+                    <p className="search-suggestion-price">₹{product.price?.toLocaleString('en-IN')}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         <div className="navbar__actions">
           {/* Wishlist */}

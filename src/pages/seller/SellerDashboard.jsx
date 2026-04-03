@@ -92,18 +92,32 @@ export default function SellerDashboard() {
 
     setUploading(true);
     try {
+      // Try Cloudinary upload first
       const formData = new FormData();
       formData.append('image', file);
       
-      const { data } = await api.post('/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      
-      setForm(p => ({ ...p, image: data.url }));
-      setImagePreview(data.url);
-      toast('Image uploaded successfully!', 'success');
+      try {
+        const { data } = await api.post('/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        
+        setForm(p => ({ ...p, image: data.url }));
+        setImagePreview(data.url);
+        toast('Image uploaded successfully!', 'success');
+      } catch (uploadErr) {
+        // Fallback to base64 if Cloudinary fails
+        console.log('Cloudinary upload failed, using base64 fallback');
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64String = reader.result;
+          setForm(p => ({ ...p, image: base64String }));
+          setImagePreview(base64String);
+          toast('Image added (using fallback)', 'success');
+        };
+        reader.readAsDataURL(file);
+      }
     } catch (err) {
-      toast('Failed to upload image', 'error');
+      toast('Failed to process image', 'error');
     } finally {
       setUploading(false);
     }

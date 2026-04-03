@@ -68,16 +68,26 @@ const translations = {
 };
 
 export const LanguageProvider = ({ children }) => {
-  const [language, setLanguage] = useState(() => localStorage.getItem('language') || 'English');
+  const [language, setLanguage] = useState(() => {
+    const savedLanguage = localStorage.getItem('language');
+    console.log('Loading saved language:', savedLanguage || 'English (default)');
+    return savedLanguage || 'English';
+  });
 
   useEffect(() => {
+    console.log('Language changed to:', language);
     localStorage.setItem('language', language);
   }, [language]);
+
+  const changeLanguage = (newLanguage) => {
+    console.log('Switching language from', language, 'to', newLanguage);
+    setLanguage(newLanguage);
+  };
 
   const t = (key) => translations[language]?.[key] || translations.English[key] || key;
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage: changeLanguage, t }}>
       {children}
     </LanguageContext.Provider>
   );

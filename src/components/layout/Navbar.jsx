@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
-  ShoppingCart, Search, Menu, X, Bell, Sun, Moon, MessageCircle, 
-  Heart, User, Package, Settings, Store, Rocket, LogOut, Bookmark 
+  ShoppingCart, Search, Menu, X, Bell, Moon, MessageCircle, 
+  Heart, User, Package, Settings, Store, Rocket, LogOut, Bookmark,
+  Mic, Camera, Globe, GitCompare, MapPin, Zap
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
@@ -25,9 +26,14 @@ export default function Navbar({ onSearch }) {
   const [dark, setDark]          = useState(() => localStorage.getItem('theme') === 'dark');
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [recentSearches] = useState(['iPhone 14', 'Laptop', 'Headphones']);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const dropRef  = useRef(null);
   const notifRef = useRef(null);
   const searchRef = useRef(null);
+  const cartRef = useRef(null);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
@@ -38,10 +44,17 @@ export default function Navbar({ onSearch }) {
     const handler = (e) => {
       if (dropRef.current  && !dropRef.current.contains(e.target))  setDropOpen(false);
       if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false);
-      if (searchRef.current && !searchRef.current.contains(e.target)) setShowSuggestions(false);
+      if (searchRef.current && !searchRef.current.contains(e.target)) { setShowSuggestions(false); setSearchFocused(false); }
+      if (cartRef.current && !cartRef.current.contains(e.target)) setCartOpen(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   useEffect(() => {
@@ -80,90 +93,129 @@ export default function Navbar({ onSearch }) {
   const initials = user?.name ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) : '?';
 
   return (
-    <nav className="navbar">
-      <div className="navbar__inner container">
-        <Link to="/" className="navbar__logo">
-          <ShoppingCart size={24} className="navbar__logo-icon" />
-          <span className="navbar__logo-text">LoopKart</span>
+    <nav className={`navbar-premium ${scrolled ? 'navbar-premium--scrolled' : ''}`}>
+      <div className="navbar-premium__glow-line"></div>
+      <div className="navbar-premium__inner container">
+        {/* Logo */}
+        <Link to="/" className="navbar-premium__logo">
+          <div className="navbar-premium__logo-icon-wrapper">
+            <ShoppingCart className="navbar-premium__logo-icon" />
+          </div>
+          <span className="navbar-premium__logo-text">LoopKart</span>
+          <span className="navbar-premium__sale-badge">SALE</span>
         </Link>
 
-        <div className="navbar__search" ref={searchRef}>
+        {/* Search Bar */}
+        <div className={`navbar-premium__search ${searchFocused ? 'navbar-premium__search--focused' : ''}`} ref={searchRef}>
           <form onSubmit={handleSearch}>
-            <Search size={18} className="navbar__search-icon" />
+            <Search className="navbar-premium__search-icon" />
             <input 
               type="text" 
-              placeholder="Search products..." 
+              placeholder="Search products, brands, categories..." 
               value={search} 
               onChange={(e) => setSearch(e.target.value)}
-              onFocus={() => search.trim().length >= 2 && setShowSuggestions(true)}
-              className="navbar__search-input" 
+              onFocus={() => { setSearchFocused(true); setShowSuggestions(true); }}
+              className="navbar-premium__search-input" 
             />
+            <button type="button" className="navbar-premium__search-btn" title="Voice Search">
+              <Mic size={18} />
+            </button>
+            <button type="button" className="navbar-premium__search-btn" title="Image Search">
+              <Camera size={18} />
+            </button>
           </form>
-          {showSuggestions && suggestions.length > 0 && (
-            <div className="search-suggestions animate-fadeIn">
-              {suggestions.map((product) => (
-                <div key={product._id} className="search-suggestion-item" onClick={() => handleSuggestionClick(product)}>
-                  <div className="search-suggestion-img">
-                    {product.emoji || product.image ? (
-                      product.emoji ? <span style={{ fontSize: '24px' }}>{product.emoji}</span> : <img src={product.image} alt={product.name} />
-                    ) : <Search size={20} />}
-                  </div>
-                  <div className="search-suggestion-info">
-                    <p className="search-suggestion-name">{product.name}</p>
-                    <p className="search-suggestion-price">₹{product.price?.toLocaleString('en-IN')}</p>
-                  </div>
+          
+          {showSuggestions && (
+            <div className="navbar-premium__search-dropdown animate-fadeIn">
+              {recentSearches.length > 0 && (
+                <div className="search-dropdown__section">
+                  <p className="search-dropdown__title">Recent Searches</p>
+                  {recentSearches.map((term, i) => (
+                    <div key={i} className="search-dropdown__item" onClick={() => { setSearch(term); handleSearch({ preventDefault: () => {} }); }}>
+                      <Search size={16} />
+                      <span>{term}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
+              
+              {suggestions.length > 0 && (
+                <div className="search-dropdown__section">
+                  <p className="search-dropdown__title">Suggestions</p>
+                  {suggestions.map((product) => (
+                    <div key={product._id} className="search-dropdown__product" onClick={() => handleSuggestionClick(product)}>
+                      <div className="search-dropdown__product-img">
+                        {product.emoji ? <span>{product.emoji}</span> : product.image ? <img src={product.image} alt={product.name} /> : <Search size={20} />}
+                      </div>
+                      <div className="search-dropdown__product-info">
+                        <p className="search-dropdown__product-name">{product.name}</p>
+                        <p className="search-dropdown__product-price">₹{product.price?.toLocaleString('en-IN')}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
 
-        <div className="navbar__actions">
+        {/* Actions */}
+        <div className="navbar-premium__actions">
+          {/* Location */}
+          <button className="navbar-premium__icon-btn" data-tooltip="Delivery Location">
+            <MapPin size={20} />
+          </button>
+
+          {/* Compare */}
+          <button className="navbar-premium__icon-btn" data-tooltip="Compare Products">
+            <GitCompare size={20} />
+          </button>
+
           {/* Wishlist */}
-          <Link to="/wishlist" className="navbar__icon-btn" data-tooltip={`Wishlist${wishCount > 0 ? ` (${wishCount})` : ''}`}>
+          <Link to="/wishlist" className="navbar-premium__icon-btn navbar-premium__icon-btn--animated" data-tooltip="Wishlist">
             <Heart size={20} />
-            {wishCount > 0 && <span className="navbar__badge navbar__badge--wish">{wishCount}</span>}
+            {wishCount > 0 && <span className="navbar-premium__badge navbar-premium__badge--pulse">{wishCount}</span>}
           </Link>
 
-          {/* Notification Bell */}
-          <div className="navbar__notif" ref={notifRef}>
+          {/* Notifications */}
+          <div className="navbar-premium__dropdown-wrapper" ref={notifRef}>
             <button
-              className="navbar__icon-btn"
-              data-tooltip={`Notifications${unread > 0 ? ` (${unread})` : ''}`}
+              className="navbar-premium__icon-btn navbar-premium__icon-btn--animated"
+              data-tooltip="Notifications"
               onClick={() => setNotifOpen((p) => !p)}
             >
               <Bell size={20} />
-              {unread > 0 && <span className="navbar__badge navbar__badge--notif">{unread > 9 ? '9+' : unread}</span>}
+              {unread > 0 && <span className="navbar-premium__badge navbar-premium__badge--pulse navbar-premium__badge--red">{unread > 9 ? '9+' : unread}</span>}
             </button>
 
             {notifOpen && (
-              <div className="notif-panel animate-fadeIn">
-                <div className="notif-panel__header">
-                  <p className="notif-panel__title"><Bell size={16} /> Notifications</p>
+              <div className="navbar-premium__dropdown navbar-premium__dropdown--notif animate-fadeIn">
+                <div className="dropdown__header">
+                  <p className="dropdown__title"><Bell size={16} /> Notifications</p>
                   {notifications.some((n) => !n.read) && (
-                    <button className="notif-panel__read-all" onClick={markAllRead}>Mark all read</button>
+                    <button className="dropdown__action" onClick={markAllRead}>Mark all read</button>
                   )}
                 </div>
-                <div className="notif-panel__list">
+                <div className="dropdown__list">
                   {notifications.length === 0 ? (
-                    <div className="notif-panel__empty">
-                      <Bell size={32} style={{ opacity: 0.3 }} />
+                    <div className="dropdown__empty">
+                      <Bell size={32} />
                       <p>No notifications yet</p>
                     </div>
                   ) : (
                     notifications.map((n) => (
                       <div
                         key={n._id}
-                        className={`notif-item ${!n.read ? 'notif-item--unread' : ''}`}
+                        className={`dropdown__item ${!n.read ? 'dropdown__item--unread' : ''}`}
                         onClick={() => { markRead(n._id); if (n.link) { navigate(n.link); setNotifOpen(false); } }}
                       >
-                        <span className="notif-item__icon">{n.icon}</span>
-                        <div className="notif-item__body">
-                          <p className="notif-item__title">{n.title}</p>
-                          <p className="notif-item__msg">{n.message}</p>
-                          <p className="notif-item__time">{new Date(n.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>
+                        <span className="dropdown__item-icon">{n.icon}</span>
+                        <div className="dropdown__item-body">
+                          <p className="dropdown__item-title">{n.title}</p>
+                          <p className="dropdown__item-msg">{n.message}</p>
+                          <p className="dropdown__item-time">{new Date(n.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>
                         </div>
-                        <button className="notif-item__del" onClick={(e) => { e.stopPropagation(); deleteOne(n._id); }}>✕</button>
+                        <button className="dropdown__item-del" onClick={(e) => { e.stopPropagation(); deleteOne(n._id); }}>✕</button>
                       </div>
                     ))
                   )}
@@ -172,68 +224,110 @@ export default function Navbar({ onSearch }) {
             )}
           </div>
 
-          {/* Chat */}
-          <Link to="/chat" className="navbar__icon-btn" data-tooltip="Messages">
+          {/* Messages */}
+          <Link to="/chat" className="navbar-premium__icon-btn navbar-premium__icon-btn--animated" data-tooltip="Messages">
             <MessageCircle size={20} />
+            <span className="navbar-premium__badge navbar-premium__badge--pulse navbar-premium__badge--orange">3</span>
           </Link>
 
           {/* Cart */}
-          <Link to="/cart" className="navbar__icon-btn" data-tooltip={`Cart${itemCount > 0 ? ` (${itemCount} items)` : ''}`}>
-            <ShoppingCart size={20} />
-            {itemCount > 0 && <span className="navbar__badge">{itemCount}</span>}
-          </Link>
+          <div className="navbar-premium__dropdown-wrapper" ref={cartRef}>
+            <button 
+              className="navbar-premium__icon-btn navbar-premium__icon-btn--animated navbar-premium__icon-btn--cart" 
+              data-tooltip="Shopping Cart"
+              onClick={() => setCartOpen((p) => !p)}
+            >
+              <ShoppingCart size={20} />
+              {itemCount > 0 && <span className="navbar-premium__badge navbar-premium__badge--pulse">{itemCount}</span>}
+            </button>
 
-          {/* Dark mode */}
-          <button className="navbar__icon-btn navbar__dark-btn" onClick={() => setDark((d) => !d)} data-tooltip={dark ? 'Light Mode' : 'Dark Mode'}>
-            {dark ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
-
-          {/* User dropdown */}
-          <div className="navbar__user" ref={dropRef}>
-            <button className="navbar__avatar" onClick={() => setDropOpen((p) => !p)}>{initials}</button>
-            {dropOpen && (
-              <div className="navbar__dropdown animate-fadeIn">
-                <div className="navbar__dropdown-header">
-                  <p className="navbar__dropdown-name">{user?.name}</p>
-                  <p className="navbar__dropdown-email">{user?.email}</p>
+            {cartOpen && (
+              <div className="navbar-premium__dropdown navbar-premium__dropdown--cart animate-fadeIn">
+                <div className="dropdown__header">
+                  <p className="dropdown__title"><ShoppingCart size={16} /> My Cart</p>
                 </div>
-                <div className="navbar__dropdown-divider" />
-                <Link to="/profile"  className="navbar__dropdown-item" onClick={() => setDropOpen(false)}><User size={16} /> My Profile</Link>
-                <Link to="/orders"   className="navbar__dropdown-item" onClick={() => setDropOpen(false)}><Package size={16} /> My Orders</Link>
-                <Link to="/saved-searches" className="navbar__dropdown-item" onClick={() => setDropOpen(false)}><Bookmark size={16} /> Saved Searches</Link>
-                <Link to="/chat"     className="navbar__dropdown-item" onClick={() => setDropOpen(false)}><MessageCircle size={16} /> Messages</Link>
-                <Link to="/wishlist" className="navbar__dropdown-item" onClick={() => setDropOpen(false)}><Heart size={16} /> Wishlist {wishCount > 0 && `(${wishCount})`}</Link>
-                <Link to="/cart"     className="navbar__dropdown-item" onClick={() => setDropOpen(false)}><ShoppingCart size={16} /> Cart {itemCount > 0 && `(${itemCount})`}</Link>
-                {user?.role === 'admin' && <Link to="/admin" className="navbar__dropdown-item" onClick={() => setDropOpen(false)}><Settings size={16} /> Admin Panel</Link>}
-                {user?.role === 'seller' && <Link to="/seller/dashboard" className="navbar__dropdown-item" onClick={() => setDropOpen(false)}><Store size={16} /> My Shop</Link>}
-                {user?.role === 'user'   && <Link to="/become-seller" className="navbar__dropdown-item" onClick={() => setDropOpen(false)}><Rocket size={16} /> Start Selling</Link>}
-                <div className="navbar__dropdown-divider" />
-                <button className="navbar__dropdown-item navbar__dropdown-item--danger" onClick={handleLogout}><LogOut size={16} /> Logout</button>
+                <div className="dropdown__list">
+                  {itemCount === 0 ? (
+                    <div className="dropdown__empty">
+                      <ShoppingCart size={32} />
+                      <p>Your cart is empty</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="cart-preview__items">
+                        <p className="cart-preview__count">{itemCount} items in cart</p>
+                      </div>
+                      <div className="cart-preview__footer">
+                        <Link to="/cart" className="cart-preview__btn" onClick={() => setCartOpen(false)}>
+                          View Cart
+                        </Link>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             )}
           </div>
 
-          <button className="navbar__hamburger" onClick={() => setMenuOpen((p) => !p)}>
-            {menuOpen ? <X size={22} /> : <Menu size={22} />}
+          {/* Language */}
+          <button className="navbar-premium__icon-btn" data-tooltip="Language">
+            <Globe size={20} />
+          </button>
+
+          {/* Dark Mode */}
+          <button className="navbar-premium__icon-btn" onClick={() => setDark((d) => !d)} data-tooltip="Dark Mode">
+            <Moon size={20} />
+          </button>
+
+          {/* User Profile */}
+          <div className="navbar-premium__dropdown-wrapper" ref={dropRef}>
+            <button className="navbar-premium__avatar" onClick={() => setDropOpen((p) => !p)}>
+              {user?.avatar ? <img src={user.avatar} alt={user.name} /> : initials}
+            </button>
+            {dropOpen && (
+              <div className="navbar-premium__dropdown navbar-premium__dropdown--user animate-fadeIn">
+                <div className="dropdown__header dropdown__header--user">
+                  <div className="dropdown__user-avatar">{user?.avatar ? <img src={user.avatar} alt={user.name} /> : initials}</div>
+                  <div>
+                    <p className="dropdown__user-name">{user?.name}</p>
+                    <p className="dropdown__user-email">{user?.email}</p>
+                  </div>
+                </div>
+                <div className="dropdown__divider" />
+                <Link to="/profile"  className="dropdown__link" onClick={() => setDropOpen(false)}><User size={16} /> My Profile</Link>
+                <Link to="/orders"   className="dropdown__link" onClick={() => setDropOpen(false)}><Package size={16} /> My Orders</Link>
+                <Link to="/saved-searches" className="dropdown__link" onClick={() => setDropOpen(false)}><Bookmark size={16} /> Saved Searches</Link>
+                <Link to="/wishlist" className="dropdown__link" onClick={() => setDropOpen(false)}><Heart size={16} /> Wishlist {wishCount > 0 && `(${wishCount})`}</Link>
+                {user?.role === 'admin' && <Link to="/admin" className="dropdown__link" onClick={() => setDropOpen(false)}><Settings size={16} /> Admin Panel</Link>}
+                {user?.role === 'seller' && <Link to="/seller/dashboard" className="dropdown__link" onClick={() => setDropOpen(false)}><Store size={16} /> My Shop</Link>}
+                {user?.role === 'user'   && <Link to="/become-seller" className="dropdown__link dropdown__link--highlight" onClick={() => setDropOpen(false)}><Zap size={16} /> Start Selling</Link>}
+                <div className="dropdown__divider" />
+                <button className="dropdown__link dropdown__link--danger" onClick={handleLogout}><LogOut size={16} /> Logout</button>
+              </div>
+            )}
+          </div>
+
+          {/* Hamburger */}
+          <button className="navbar-premium__hamburger" onClick={() => setMenuOpen((p) => !p)}>
+            {menuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
       </div>
 
       {menuOpen && (
-        <div className="navbar__mobile animate-fadeIn">
-          <form className="navbar__mobile-search" onSubmit={handleSearch}>
-            <Search size={18} className="navbar__search-icon" />
-            <input type="text" placeholder="Search products..." value={search} onChange={(e) => setSearch(e.target.value)} className="navbar__search-input" />
+        <div className="navbar-premium__mobile animate-fadeIn">
+          <form className="navbar-premium__mobile-search" onSubmit={handleSearch}>
+            <Search size={18} />
+            <input type="text" placeholder="Search products..." value={search} onChange={(e) => setSearch(e.target.value)} />
           </form>
-          <Link to="/profile"  className="navbar__mobile-item" onClick={() => setMenuOpen(false)}><User size={16} /> My Profile</Link>
-          <Link to="/orders"   className="navbar__mobile-item" onClick={() => setMenuOpen(false)}><Package size={16} /> My Orders</Link>
-          <Link to="/saved-searches" className="navbar__mobile-item" onClick={() => setMenuOpen(false)}><Bookmark size={16} /> Saved Searches</Link>
-          <Link to="/wishlist" className="navbar__mobile-item" onClick={() => setMenuOpen(false)}><Heart size={16} /> Wishlist</Link>
-          <Link to="/cart"     className="navbar__mobile-item" onClick={() => setMenuOpen(false)}><ShoppingCart size={16} /> Cart {itemCount > 0 && `(${itemCount})`}</Link>
-          {user?.role === 'admin'  && <Link to="/admin"            className="navbar__mobile-item" onClick={() => setMenuOpen(false)}><Settings size={16} /> Admin Panel</Link>}
-          {user?.role === 'seller' && <Link to="/seller/dashboard" className="navbar__mobile-item" onClick={() => setMenuOpen(false)}><Store size={16} /> My Shop</Link>}
-          {user?.role === 'user'   && <Link to="/become-seller"    className="navbar__mobile-item" onClick={() => setMenuOpen(false)}><Rocket size={16} /> Start Selling</Link>}
-          <button className="navbar__mobile-item navbar__mobile-item--danger" onClick={handleLogout}><LogOut size={16} /> Logout</button>
+          <Link to="/profile"  className="navbar-premium__mobile-item" onClick={() => setMenuOpen(false)}><User size={18} /> My Profile</Link>
+          <Link to="/orders"   className="navbar-premium__mobile-item" onClick={() => setMenuOpen(false)}><Package size={18} /> My Orders</Link>
+          <Link to="/wishlist" className="navbar-premium__mobile-item" onClick={() => setMenuOpen(false)}><Heart size={18} /> Wishlist</Link>
+          <Link to="/cart"     className="navbar-premium__mobile-item" onClick={() => setMenuOpen(false)}><ShoppingCart size={18} /> Cart {itemCount > 0 && `(${itemCount})`}</Link>
+          {user?.role === 'admin'  && <Link to="/admin"            className="navbar-premium__mobile-item" onClick={() => setMenuOpen(false)}><Settings size={18} /> Admin Panel</Link>}
+          {user?.role === 'seller' && <Link to="/seller/dashboard" className="navbar-premium__mobile-item" onClick={() => setMenuOpen(false)}><Store size={18} /> My Shop</Link>}
+          {user?.role === 'user'   && <Link to="/become-seller"    className="navbar-premium__mobile-item" onClick={() => setMenuOpen(false)}><Zap size={18} /> Start Selling</Link>}
+          <button className="navbar-premium__mobile-item navbar-premium__mobile-item--danger" onClick={handleLogout}><LogOut size={18} /> Logout</button>
         </div>
       )}
     </nav>

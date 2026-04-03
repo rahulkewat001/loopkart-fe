@@ -8,19 +8,22 @@
     #030712;
 }
 
-.auth-shell__video,
+.auth-shell__animated-bg,
 .auth-shell__video-fade,
 .auth-shell__scene {
   position: absolute;
   inset: 0;
 }
 
-.auth-shell__video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0.28;
-  filter: saturate(1.2) contrast(1.1);
+.auth-shell__animated-bg {
+  background:
+    radial-gradient(circle at 25% 45%, rgba(45, 212, 191, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(14, 165, 233, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 50% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+    linear-gradient(135deg, #030712 0%, #0a1628 50%, #030712 100%);
+  background-size: 200% 200%, 200% 200%, 200% 200%, 100% 100%;
+  animation: gradientShift 22s ease infinite;
+  opacity: 0.9;
 }
 
 .auth-shell__video-fade {

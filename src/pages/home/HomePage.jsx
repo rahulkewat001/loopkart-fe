@@ -165,7 +165,7 @@ function GuestLanding({ onAuthenticated }) {
 
   return (
     <div className="guest-home">
-      <video className="guest-home__video" src="/homescreen.mp4" autoPlay muted loop playsInline />
+      <div className="guest-home__animated-bg" />
       <div className="guest-home__overlay" />
 
       <section className="guest-home__hero">
@@ -456,7 +456,7 @@ export default function HomePage() {
       <Navbar />
 
       <section className="hero-experience" id="hero">
-        <video className="hero-experience__video" src="/homepage-hero.mp4" autoPlay muted loop playsInline />
+        <div className="hero-experience__animated-bg" />
         <div className="hero-experience__overlay" />
 
         <div className="container hero-experience__content">

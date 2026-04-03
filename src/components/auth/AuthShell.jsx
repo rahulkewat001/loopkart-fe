@@ -16,7 +16,7 @@ export default function AuthShell({
 }) {
   return (
     <div className="auth-shell">
-      <video className="auth-shell__video" src="/ambient-loop.mp4" autoPlay muted loop playsInline />
+      <div className="auth-shell__animated-bg" />
       <div className="auth-shell__video-fade" />
       <div className="auth-shell__scene">
         <Suspense fallback={null}>

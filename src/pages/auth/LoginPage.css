@@ -103,6 +103,47 @@
 }
 .auth-resend:hover { opacity: 0.75; }
 
+/* ─── Social Login ───────────────────────────────────────────── */
+.auth-divider {
+  display: flex; align-items: center; gap: 16px;
+  margin: 24px 0 20px;
+  color: var(--text-muted); font-size: 13px;
+}
+.auth-divider::before,
+.auth-divider::after {
+  content: ''; flex: 1; height: 1px;
+  background: var(--border);
+}
+
+.auth-social {
+  display: flex; gap: 12px;
+}
+
+.auth-social-btn {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  gap: 10px; padding: 12px 20px;
+  background: var(--bg-card); border: 1.5px solid var(--border);
+  border-radius: var(--radius-md); font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: all var(--transition);
+  font-family: var(--font-body);
+}
+
+.auth-social-btn--google {
+  color: var(--text-primary);
+}
+.auth-social-btn--google:hover {
+  background: #f8f9fa;
+  border-color: #4285F4;
+}
+
+.auth-social-btn--twitter {
+  color: var(--text-primary);
+}
+.auth-social-btn--twitter:hover {
+  background: #e8f5fe;
+  border-color: #1DA1F2;
+}
+
 /* ─── Footer ─────────────────────────────────────────────────── */
 .auth-switch {
   text-align: center; font-size: 14px;

@@ -5,10 +5,19 @@ import './Footer.css';
 export default function Footer() {
   const currentYear = new Date().getFullYear();
   const [showBackToTop, setShowBackToTop] = useState(false);
+  const [showScrollDown, setShowScrollDown] = useState(true);
 
   useEffect(() => {
     const handleScroll = () => {
-      setShowBackToTop(window.scrollY > 300);
+      const scrollPosition = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      
+      // Show back to top when scrolled down 300px
+      setShowBackToTop(scrollPosition > 300);
+      
+      // Hide scroll down when near bottom (within 500px of bottom)
+      setShowScrollDown(scrollPosition + windowHeight < documentHeight - 500);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -16,6 +25,10 @@ export default function Footer() {
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const scrollToBottom = () => {
+    window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
   };
 
   return (
@@ -136,6 +149,15 @@ export default function Footer() {
         aria-label="Back to top"
       >
         ↑
+      </button>
+
+      {/* Scroll to Bottom Button */}
+      <button 
+        className={`scroll-to-bottom ${showScrollDown ? 'visible' : ''}`}
+        onClick={scrollToBottom}
+        aria-label="Scroll to bottom"
+      >
+        ↓
       </button>
     </>
   );

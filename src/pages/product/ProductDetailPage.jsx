@@ -7,9 +7,6 @@ import { useToast } from '../../components/ui/Toast/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 import Navbar from '../../components/layout/Navbar';
 import Button from '../../components/ui/Button';
-import VerificationBadge from '../../components/ui/VerificationBadge';
-import TrustScore from '../../components/ui/TrustScore';
-import PriceHistory from '../../components/product/PriceHistory';
 import './ProductDetailPage.css';
 
 const Stars = ({ rating, interactive = false, onRate }) => {
@@ -42,7 +39,6 @@ export default function ProductDetailPage() {
   const { toast }                        = useToast();
 
   const [product, setProduct]       = useState(null);
-  const [seller, setSeller]         = useState(null);
   const [reviews, setReviews]       = useState([]);
   const [loading, setLoading]       = useState(true);
   const [activeImg, setActiveImg]   = useState(0);
@@ -58,12 +54,6 @@ export default function ProductDetailPage() {
     ]).then(([p, r]) => {
       setProduct(p.data.product);
       setReviews(r.data.reviews);
-      // Fetch seller info if it's a seller listing
-      if (p.data.product.seller) {
-        api.get(`/profile/${p.data.product.seller}`).then(res => {
-          setSeller(res.data);
-        }).catch(() => {});
-      }
     }).catch(() => navigate('/')).finally(() => setLoading(false));
   }, [id]);
 
@@ -90,6 +80,11 @@ export default function ProductDetailPage() {
   };
 
   const handleChatSeller = async () => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
     if (!product.seller) {
       toast('This is a platform product. Become a seller to list your own!', 'info');
       return;
@@ -141,41 +136,84 @@ export default function ProductDetailPage() {
         <div className="pdp-layout animate-fadeUp">
 
           {/* ── Image Gallery ── */}
-          <div className="pdp-gallery">
-            {product.badge && <span className="pdp-badge">{product.badge}</span>}
-            <button className={`pdp-wishlist ${wishlisted ? 'pdp-wishlist--active' : ''}`} onClick={handleWishlist}>
-              {wishlisted ? '❤️' : '🤍'}
-            </button>
+          <div className="pdp-gallery-column">
+            <div className="pdp-gallery">
+              {product.badge && <span className="pdp-badge">{product.badge}</span>}
+              <button className={`pdp-wishlist ${wishlisted ? 'pdp-wishlist--active' : ''}`} onClick={handleWishlist}>
+                {wishlisted ? '❤️' : '🤍'}
+              </button>
 
-            {/* Main image */}
-            <div className="pdp-gallery__main">
-              {allImages.length > 0 ? (
-                <img
-                  src={allImages[activeImg]}
-                  alt={product.name}
-                  className="pdp-gallery__img"
-                  onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
-                />
-              ) : null}
-              <div className="pdp-gallery__fallback" style={{ display: allImages.length ? 'none' : 'flex' }}>
-                {product.emoji}
+              {/* Main image */}
+              <div className="pdp-gallery__main">
+                {allImages.length > 0 ? (
+                  <img
+                    src={allImages[activeImg]}
+                    alt={product.name}
+                    className="pdp-gallery__img"
+                    onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+                  />
+                ) : null}
+                <div className="pdp-gallery__fallback" style={{ display: allImages.length ? 'none' : 'flex' }}>
+                  {product.emoji}
+                </div>
               </div>
+
+              {/* Thumbnails */}
+              {allImages.length > 1 && (
+                <div className="pdp-gallery__thumbs">
+                  {allImages.map((img, i) => (
+                    <button
+                      key={i}
+                      className={`pdp-gallery__thumb ${activeImg === i ? 'pdp-gallery__thumb--active' : ''}`}
+                      onClick={() => setActiveImg(i)}
+                    >
+                      <img src={img} alt={`view ${i + 1}`} />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Thumbnails */}
-            {allImages.length > 1 && (
-              <div className="pdp-gallery__thumbs">
-                {allImages.map((img, i) => (
-                  <button
-                    key={i}
-                    className={`pdp-gallery__thumb ${activeImg === i ? 'pdp-gallery__thumb--active' : ''}`}
-                    onClick={() => setActiveImg(i)}
-                  >
-                    <img src={img} alt={`view ${i + 1}`} />
-                  </button>
-                ))}
-              </div>
-            )}
+            {/* ── Reviews ── */}
+            <div className="reviews-section">
+              <h2 className="reviews-title">Customer Reviews ({reviews.length})</h2>
+              <form onSubmit={submitReview} className="review-form">
+                <h3>Write a Review</h3>
+                <div className="review-form__rating">
+                  <span>Your Rating:</span>
+                  <Stars rating={reviewForm.rating} interactive onRate={(r) => setReviewForm((p) => ({ ...p, rating: r }))} />
+                  <span className="review-form__rating-val">{reviewForm.rating}/5</span>
+                </div>
+                <textarea
+                  className="review-form__textarea"
+                  placeholder="Share your experience with this product..."
+                  value={reviewForm.comment}
+                  onChange={(e) => setReviewForm((p) => ({ ...p, comment: e.target.value }))}
+                  rows={3}
+                />
+                <Button type="submit" loading={submitting}>Submit Review</Button>
+              </form>
+
+              {reviews.length === 0 ? (
+                <p className="reviews-empty">No reviews yet. Be the first to review!</p>
+              ) : (
+                <div className="reviews-list">
+                  {reviews.map((r) => (
+                    <div key={r._id} className="review-card animate-fadeUp">
+                      <div className="review-card__header">
+                        <div className="review-card__avatar">{r.name?.[0]?.toUpperCase()}</div>
+                        <div>
+                          <p className="review-card__name">{r.name}</p>
+                          <p className="review-card__date">{new Date(r.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                        </div>
+                        <Stars rating={r.rating} />
+                      </div>
+                      <p className="review-card__comment">{r.comment}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* ── Product Info ── */}
@@ -196,6 +234,32 @@ export default function ProductDetailPage() {
             </div>
 
             <p className="pdp-desc">{product.description}</p>
+
+            <div className="pdp-spec-grid">
+              <div className="pdp-spec-card">
+                <span>Manufacturer</span>
+                <strong>{product.manufacturer || 'LoopKart verified'}</strong>
+              </div>
+              <div className="pdp-spec-card">
+                <span>Product health</span>
+                <strong>{product.healthScore || 95}/100</strong>
+              </div>
+              <div className="pdp-spec-card">
+                <span>Usage history</span>
+                <strong>{product.usageMonths || 0} months</strong>
+              </div>
+              <div className="pdp-spec-card">
+                <span>Material</span>
+                <strong>{product.material || 'Mixed material'}</strong>
+              </div>
+            </div>
+
+            {product.usageSummary ? (
+              <div className="pdp-usage-note">
+                <span>Condition note</span>
+                <p>{product.usageSummary}</p>
+              </div>
+            ) : null}
 
             <div className="pdp-stock">
               <span className="pdp-stock-dot" />
@@ -226,75 +290,27 @@ export default function ProductDetailPage() {
               ))}
             </div>
 
-            {product.isSellerListing && seller && (
+            <div className="pdp-impact-strip">
+              <span>♻ Saves {product.wasteSavedKg || 1}kg material waste</span>
+              <span>🌿 Avoids {product.carbonSavedKg || 0}kg CO2</span>
+              <span>📍 Shipped from {product.city || 'your nearest hub'}</span>
+            </div>
+
+            {product.isSellerListing && (
               <div className="pdp-seller">
                 <p className="pdp-seller__label">🏪 Sold by</p>
                 <div className="pdp-seller__card">
                   <div className="pdp-seller__avatar">{product.sellerName?.[0]?.toUpperCase()}</div>
-                  <div className="pdp-seller__info">
+                  <div>
                     <p className="pdp-seller__name">{product.sellerName}</p>
-                    <div className="pdp-seller__badges">
-                      <VerificationBadge type="email" verified={seller.verification?.email} size="sm" />
-                      <VerificationBadge type="phone" verified={seller.verification?.phone} size="sm" />
-                      <VerificationBadge type="identity" verified={seller.verification?.identity} size="sm" />
-                    </div>
                     <p className="pdp-seller__condition">
                       Condition: <strong>{product.condition?.replace('_', ' ')}</strong>
                     </p>
                   </div>
-                  {seller.trustScore > 0 && (
-                    <TrustScore score={seller.trustScore} size="sm" showLabel={false} />
-                  )}
                 </div>
               </div>
             )}
           </div>
-        </div>
-
-        {/* ── Price History ── */}
-        {product.priceHistory && product.priceHistory.length > 1 && (
-          <PriceHistory priceHistory={product.priceHistory} />
-        )}
-
-        {/* ── Reviews ── */}
-        <div className="reviews-section">
-          <h2 className="reviews-title">Customer Reviews ({reviews.length})</h2>
-          <form onSubmit={submitReview} className="review-form">
-            <h3>Write a Review</h3>
-            <div className="review-form__rating">
-              <span>Your Rating:</span>
-              <Stars rating={reviewForm.rating} interactive onRate={(r) => setReviewForm((p) => ({ ...p, rating: r }))} />
-              <span className="review-form__rating-val">{reviewForm.rating}/5</span>
-            </div>
-            <textarea
-              className="review-form__textarea"
-              placeholder="Share your experience with this product..."
-              value={reviewForm.comment}
-              onChange={(e) => setReviewForm((p) => ({ ...p, comment: e.target.value }))}
-              rows={3}
-            />
-            <Button type="submit" loading={submitting}>Submit Review</Button>
-          </form>
-
-          {reviews.length === 0 ? (
-            <p className="reviews-empty">No reviews yet. Be the first to review!</p>
-          ) : (
-            <div className="reviews-list">
-              {reviews.map((r) => (
-                <div key={r._id} className="review-card animate-fadeUp">
-                  <div className="review-card__header">
-                    <div className="review-card__avatar">{r.name?.[0]?.toUpperCase()}</div>
-                    <div>
-                      <p className="review-card__name">{r.name}</p>
-                      <p className="review-card__date">{new Date(r.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
-                    </div>
-                    <Stars rating={r.rating} />
-                  </div>
-                  <p className="review-card__comment">{r.comment}</p>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </div>
     </div>

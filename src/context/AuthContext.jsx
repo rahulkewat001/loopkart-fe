@@ -37,7 +37,9 @@ export const AuthProvider = ({ children }) => {
     try {
       const refreshToken = localStorage.getItem('refreshToken');
       await api.post('/auth/logout', { refreshToken });
-    } catch {}
+    } catch {
+      // Local logout should still succeed even if the server call fails.
+    }
     localStorage.clear();
     setUser(null);
   }, []);

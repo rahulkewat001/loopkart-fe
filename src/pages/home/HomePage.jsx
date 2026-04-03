@@ -1,380 +1,708 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
-  Smartphone, Shirt, Home, Sparkles, Dumbbell, BookOpen, Baby, UtensilsCrossed,
-  ShoppingBag, Truck, RefreshCw, ShieldCheck, Headphones,
-  Search, X, SlidersHorizontal, Package, Zap
+  ArrowLeft,
+  ArrowRight,
+  BadgeCheck,
+  CircleDollarSign,
+  Heart,
+  LockKeyhole,
+  Leaf,
+  Mail,
+  Moon,
+  PackageCheck,
+  Recycle,
+  Search,
+  ShieldCheck,
+  SunMedium,
+  UserRound,
+  X,
 } from 'lucide-react';
 import api from '../../utils/api';
+import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
+import { useTheme } from '../../context/ThemeContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useToast } from '../../components/ui/Toast/ToastContext';
+import Input from '../../components/ui/Input';
 import Navbar from '../../components/layout/Navbar';
-import HeroSlider from '../../components/layout/HeroSlider';
-import TrendingProducts from '../../components/product/TrendingProducts';
-import ProductGrid from '../../components/product/ProductGrid';
+import RevealOnScroll from '../../components/ui/RevealOnScroll';
 import './HomePage.css';
 
-const categories = [
-  { 
-    id: 1, 
-    Icon: Smartphone, 
-    label: 'Electronics',
-    image: 'https://images.unsplash.com/photo-1468495244123-6c6c332eeece?w=400&q=80',
-    description: 'Phones, Laptops & More'
+const heroStats = [
+  { value: '12k+', label: 'beautifully relisted essentials' },
+  { value: '48 cities', label: 'seller communities already active' },
+  { value: '4.9 / 5', label: 'buyer trust on featured finds' },
+];
+
+const impactMoments = [
+  {
+    icon: Recycle,
+    title: 'Reuse with intention',
+    copy: 'Every relisted product extends its useful life, lowers embodied carbon, and keeps value moving instead of creating more waste.',
   },
-  { 
-    id: 2, 
-    Icon: Shirt, 
-    label: 'Fashion',
-    image: 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=400&q=80',
-    description: 'Clothing & Accessories'
+  {
+    icon: ShieldCheck,
+    title: 'Trust-forward discovery',
+    copy: 'Condition, health score, usage age, and seller reputation are surfaced early so browsing feels clear, premium, and reassuring.',
   },
-  { 
-    id: 3, 
-    Icon: Home, 
-    label: 'Home & Living',
-    image: 'https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=400&q=80',
-    description: 'Furniture & Decor'
-  },
-  { 
-    id: 4, 
-    Icon: Sparkles, 
-    label: 'Beauty',
-    image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&q=80',
-    description: 'Skincare & Makeup'
-  },
-  { 
-    id: 5, 
-    Icon: Dumbbell, 
-    label: 'Sports',
-    image: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=400&q=80',
-    description: 'Fitness & Equipment'
-  },
-  { 
-    id: 6, 
-    Icon: BookOpen, 
-    label: 'Books',
-    image: 'https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=400&q=80',
-    description: 'Fiction & Non-Fiction'
-  },
-  { 
-    id: 7, 
-    Icon: Baby, 
-    label: 'Toys',
-    image: 'https://images.unsplash.com/photo-1558060370-d644479cb6f7?w=400&q=80',
-    description: 'Kids & Baby Products'
-  },
-  { 
-    id: 8, 
-    Icon: UtensilsCrossed, 
-    label: 'Kitchen',
-    image: 'https://images.unsplash.com/photo-1556911220-bff31c812dba?w=400&q=80',
-    description: 'Cookware & Appliances'
+  {
+    icon: CircleDollarSign,
+    title: 'Better value for both sides',
+    copy: 'Buyers get better prices, while sellers turn dormant products into cash without the chaos of old-school classifieds.',
   },
 ];
 
-const features = [
-  { Icon: Truck,        title: 'Free Delivery',   desc: 'On orders above ₹499' },
-  { Icon: RefreshCw,   title: 'Easy Returns',    desc: '30-day hassle-free returns' },
-  { Icon: ShieldCheck, title: 'Secure Payments', desc: '100% safe & encrypted' },
-  { Icon: Headphones,  title: '24/7 Support',    desc: 'Always here to help you' },
-];
+const compactNumber = new Intl.NumberFormat('en-IN', {
+  notation: 'compact',
+  maximumFractionDigits: 1,
+});
 
-const Stars = ({ rating }) => {
-  const full = Math.floor(rating), half = rating % 1 >= 0.5;
+const conditionLabel = (condition) => condition?.replace('_', ' ') || 'good';
+
+function GuestLanding({ onAuthenticated }) {
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { theme, toggleTheme } = useTheme();
+  const authSectionRef = useRef(null);
+  const [started, setStarted] = useState(false);
+  const [authMode, setAuthMode] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
+  const [registerForm, setRegisterForm] = useState({ name: '', email: '', password: '', confirmPassword: '' });
+
+  useEffect(() => {
+    const requestedMode = searchParams.get('auth');
+
+    if (requestedMode === 'login' || requestedMode === 'signup') {
+      setStarted(true);
+      setAuthMode(requestedMode);
+      return;
+    }
+
+    setAuthMode(null);
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (!authMode) return;
+    authSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [authMode]);
+
+  const openAuthMode = (mode) => {
+    setStarted(true);
+    setAuthMode(mode);
+    setSearchParams({ auth: mode }, { replace: true });
+  };
+
+  const submitLogin = async (event) => {
+    event.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      const { data } = await api.post('/auth/login', loginForm);
+      setSearchParams({}, { replace: true });
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      onAuthenticated(data);
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || 'Login failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const submitRegister = async (event) => {
+    event.preventDefault();
+
+    if (registerForm.password !== registerForm.confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const { data } = await api.post('/auth/register', {
+        name: registerForm.name.trim(),
+        email: registerForm.email.trim(),
+        password: registerForm.password,
+      });
+      setSearchParams({}, { replace: true });
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      onAuthenticated(data);
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || 'Sign up failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <span className="stars">
-      {Array.from({ length: 5 }, (_, i) => (
-        <span key={i} className={i < full ? 'star star--full' : (i === full && half ? 'star star--half' : 'star star--empty')}>★</span>
-      ))}
-    </span>
+    <div className="guest-home">
+      <video className="guest-home__video" src="/homescreen.mp4" autoPlay muted loop playsInline />
+      <div className="guest-home__overlay" />
+
+      <section className="guest-home__hero">
+        <div className="guest-home__brand">LoopKart</div>
+        <button
+          type="button"
+          className="guest-home__theme-toggle"
+          onClick={toggleTheme}
+          aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+        >
+          {theme === 'dark' ? <SunMedium size={16} /> : <Moon size={16} />}
+          <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
+        </button>
+
+        <div className="guest-home__hero-content animate-fadeUp">
+          <p className="guest-home__eyebrow">Save value. Save materials. Save the planet.</p>
+          <h1 className="guest-home__title">LoopKart</h1>
+          <p className="guest-home__subtitle">
+            A refined marketplace for sustainable products, conscious choices, and beautifully extended product lifecycles.
+          </p>
+          <p className="guest-home__support">
+            Buy with intention. Sell with confidence. Keep better things in circulation.
+          </p>
+
+          {!started ? (
+            <button className="guest-home__cta" onClick={() => setStarted(true)}>
+              Get started
+            </button>
+          ) : (
+            <div className="guest-home__choice-row animate-fadeUp">
+              <button
+                className={`guest-home__choice ${authMode === 'login' ? 'guest-home__choice--active' : ''}`}
+                onClick={() => openAuthMode('login')}
+              >
+                Login
+              </button>
+              <button
+                className={`guest-home__choice ${authMode === 'signup' ? 'guest-home__choice--active' : ''}`}
+                onClick={() => openAuthMode('signup')}
+              >
+                Sign up
+              </button>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {authMode ? (
+        <section ref={authSectionRef} className="guest-home__auth guest-home__auth--visible">
+          <div className="guest-home__auth-shell animate-fadeUp">
+            <div className={`guest-home__auth-feedback ${error ? 'guest-home__auth-feedback--visible' : ''}`} aria-live="polite">
+              {error ? <div className="guest-home__auth-alert">{error}</div> : null}
+            </div>
+
+            {authMode === 'login' ? (
+              <form className="guest-home__form" onSubmit={submitLogin}>
+              <h2>Welcome back</h2>
+              <p>Log in to continue buying and selling with LoopKart.</p>
+
+              <Input
+                label="Email"
+                type="email"
+                value={loginForm.email}
+                onChange={(event) => {
+                  setLoginForm((current) => ({ ...current, email: event.target.value }));
+                  setError('');
+                }}
+                icon={<Mail size={18} />}
+                placeholder="you@example.com"
+                required
+              />
+
+              <Input
+                label="Password"
+                type="password"
+                value={loginForm.password}
+                onChange={(event) => {
+                  setLoginForm((current) => ({ ...current, password: event.target.value }));
+                  setError('');
+                }}
+                icon={<LockKeyhole size={18} />}
+                placeholder="Enter your password"
+                required
+              />
+
+              <div className="guest-home__form-meta">
+                <button type="button" className="guest-home__text-link" onClick={() => navigate('/forgot-password')}>
+                  Forgot password?
+                </button>
+              </div>
+
+              <button type="submit" className="guest-home__submit" disabled={loading}>
+                {loading ? 'Logging in...' : 'Login'}
+              </button>
+              <p className="guest-home__switch-copy">
+                Don&apos;t have an account yet?{' '}
+                <button type="button" className="guest-home__text-link" onClick={() => openAuthMode('signup')}>
+                  Sign up
+                </button>
+              </p>
+            </form>
+            ) : null}
+
+            {authMode === 'signup' ? (
+              <form className="guest-home__form" onSubmit={submitRegister}>
+              <h2>Create your account</h2>
+              <p>Join LoopKart and start saving products, materials, and money.</p>
+
+              <Input
+                label="Full name"
+                type="text"
+                value={registerForm.name}
+                onChange={(event) => {
+                  setRegisterForm((current) => ({ ...current, name: event.target.value }));
+                  setError('');
+                }}
+                icon={<UserRound size={18} />}
+                placeholder="Your name"
+                required
+              />
+
+              <Input
+                label="Email"
+                type="email"
+                value={registerForm.email}
+                onChange={(event) => {
+                  setRegisterForm((current) => ({ ...current, email: event.target.value }));
+                  setError('');
+                }}
+                icon={<Mail size={18} />}
+                placeholder="you@example.com"
+                required
+              />
+
+              <Input
+                label="Password"
+                type="password"
+                value={registerForm.password}
+                onChange={(event) => {
+                  setRegisterForm((current) => ({ ...current, password: event.target.value }));
+                  setError('');
+                }}
+                icon={<LockKeyhole size={18} />}
+                placeholder="Create a password"
+                required
+              />
+
+              <Input
+                label="Confirm password"
+                type="password"
+                value={registerForm.confirmPassword}
+                onChange={(event) => {
+                  setRegisterForm((current) => ({ ...current, confirmPassword: event.target.value }));
+                  setError('');
+                }}
+                icon={<LockKeyhole size={18} />}
+                placeholder="Repeat your password"
+                required
+              />
+
+              <button type="submit" className="guest-home__submit" disabled={loading}>
+                {loading ? 'Creating account...' : 'Sign up'}
+              </button>
+              <p className="guest-home__switch-copy">
+                Already have an account?{' '}
+                <button type="button" className="guest-home__text-link" onClick={() => openAuthMode('login')}>
+                  Login
+                </button>
+              </p>
+            </form>
+            ) : null}
+          </div>
+        </section>
+      ) : null}
+    </div>
   );
-};
-
-const disc = (price, original) => Math.round((1 - price / original) * 100);
-
-const SORT_OPTIONS = [
-  { value: 'default',     label: 'Default' },
-  { value: 'price_asc',   label: 'Price: Low to High' },
-  { value: 'price_desc',  label: 'Price: High to Low' },
-  { value: 'rating_desc', label: 'Top Rated' },
-  { value: 'discount',    label: 'Best Discount' },
-];
+}
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const { user, saveAuth } = useAuth();
+  const { addToCart, items } = useCart();
+  const { toggleWishlist, isWishlisted } = useWishlist();
   const { toast } = useToast();
 
-  const [products, setProducts]         = useState([]);
-  const [filtered, setFiltered]         = useState([]);
-  const [loading, setLoading]           = useState(true);
-  const [activeCategory, setActiveCategory] = useState('All');
-  const [searchQuery, setSearchQuery]   = useState(searchParams.get('search') || '');
-  const [sortBy, setSortBy]             = useState('default');
-  const [priceRange, setPriceRange]     = useState([0, 10000]);
-  const [maxPrice, setMaxPrice]         = useState(10000);
-  const [minRating, setMinRating]       = useState(0);
-  const [showFilters, setShowFilters]   = useState(false);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    api.get('/products').then(({ data }) => {
-      setProducts(data.products);
-      const max = Math.max(...data.products.map((p) => p.price));
-      setMaxPrice(max);
-      setPriceRange([0, max]);
-    }).finally(() => setLoading(false));
+    let cancelled = false;
+
+    api
+      .get('/products', { params: { limit: 120, sort: 'trending' } })
+      .then(({ data }) => {
+        if (cancelled) return;
+        setProducts(data.products || []);
+      })
+      .catch(() => {
+        if (!cancelled) setProducts([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  // Apply all filters + sort
-  const applyFilters = useCallback(() => {
-    let result = [...products];
+  const featured = products[0];
+  const categorySummaries = Object.values(
+    products.reduce((accumulator, product) => {
+      if (!accumulator[product.category]) {
+        accumulator[product.category] = {
+          name: product.category,
+          count: 0,
+          image: product.image,
+          topProduct: product,
+          totalViews: 0,
+        };
+      }
 
-    // Category
-    if (activeCategory !== 'All') result = result.filter((p) => p.category === activeCategory);
+      accumulator[product.category].count += 1;
+      accumulator[product.category].totalViews += product.views || 0;
 
-    // Search
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      result = result.filter((p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q) ||
-        p.description?.toLowerCase().includes(q)
-      );
+      if ((product.views || 0) > (accumulator[product.category].topProduct?.views || 0)) {
+        accumulator[product.category].topProduct = product;
+        accumulator[product.category].image = product.image;
+      }
+
+      return accumulator;
+    }, {})
+  ).sort((left, right) => right.count - left.count || right.totalViews - left.totalViews);
+
+  const normalizedSearch = searchQuery.trim().toLowerCase();
+  const categoryProducts = selectedCategory
+    ? products.filter((product) => product.category === selectedCategory)
+    : [];
+  const filteredCategoryProducts = normalizedSearch
+    ? categoryProducts.filter((product) =>
+        [
+          product.name,
+          product.category,
+          product.manufacturer,
+          product.usageSummary,
+          product.sellerName,
+          product.city,
+          product.material,
+        ]
+          .filter(Boolean)
+          .some((value) => value.toLowerCase().includes(normalizedSearch))
+      )
+    : categoryProducts;
+  const visibleProducts = filteredCategoryProducts.slice(0, 12);
+  const selectedCategoryCount = filteredCategoryProducts.length;
+
+  const handlePrimaryHero = () => {
+    if (user) {
+      document.getElementById('trending')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
     }
 
-    // Price range
-    result = result.filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1]);
-
-    // Min rating
-    if (minRating > 0) result = result.filter((p) => p.rating >= minRating);
-
-    // Sort
-    switch (sortBy) {
-      case 'price_asc':   result.sort((a, b) => a.price - b.price); break;
-      case 'price_desc':  result.sort((a, b) => b.price - a.price); break;
-      case 'rating_desc': result.sort((a, b) => b.rating - a.rating); break;
-      case 'discount':    result.sort((a, b) => disc(a.price, a.originalPrice) < disc(b.price, b.originalPrice) ? 1 : -1); break;
-      default: break;
-    }
-
-    setFiltered(result);
-  }, [products, activeCategory, searchQuery, priceRange, minRating, sortBy]);
-
-  useEffect(() => { applyFilters(); }, [applyFilters]);
-
-  // Sync search from URL param
-  useEffect(() => {
-    const q = searchParams.get('search');
-    if (q) { setSearchQuery(q); document.getElementById('products-section')?.scrollIntoView({ behavior: 'smooth' }); }
-  }, [searchParams]);
-
-  const resetFilters = () => {
-    setSearchQuery(''); setSortBy('default');
-    setPriceRange([0, maxPrice]); setMinRating(0); setActiveCategory('All');
+    navigate('/login');
   };
 
-  const hasActiveFilters = searchQuery || sortBy !== 'default' || priceRange[0] > 0 || priceRange[1] < maxPrice || minRating > 0 || activeCategory !== 'All';
+  const handleSecondaryHero = () => {
+    if (user) {
+      navigate(user.role === 'seller' ? '/seller/dashboard' : '/become-seller');
+      return;
+    }
+
+    navigate('/register');
+  };
+
+  const handleQuickAdd = (product) => {
+    addToCart(product);
+    toast(`${product.name} added to cart`, 'success');
+  };
+
+  if (!user) {
+    return <GuestLanding onAuthenticated={saveAuth} />;
+  }
 
   return (
-    <div className="home">
-      <Navbar onSearch={(q) => { setSearchQuery(q); document.getElementById('products-section')?.scrollIntoView({ behavior: 'smooth' }); }} />
+    <div className="immersive-home">
+      <Navbar />
 
-      {/* ── Premium Hero Slider ─────────────────────────────── */}
-      <HeroSlider />
+      <section className="hero-experience" id="hero">
+        <video className="hero-experience__video" src="/homepage-hero.mp4" autoPlay muted loop playsInline />
+        <div className="hero-experience__overlay" />
 
-      {/* ── Trending Products ────────────────────────────────── */}
-      <div id="trending-section">
-        <TrendingProducts />
-      </div>
+        <div className="container hero-experience__content">
+          <div className="hero-experience__copy animate-fadeUp">
+            <p className="hero-experience__eyebrow">Curated sustainable marketplace</p>
+            <h1 className="hero-experience__title">Reuse is the most beautiful kind of progress.</h1>
+            <p className="hero-experience__subtitle">
+              LoopKart turns second-hand buying and selling into a calmer, more premium product experience with verified
+              details, intentional design, and better products kept in circulation.
+            </p>
 
-      {/* ── Categories ───────────────────────────────────────── */}
-      <section className="section">
-        <div className="container">
-          <h2 className="section__title">Shop by Category</h2>
-          <div className="categories">
-            <button 
-              className={`category-card ${activeCategory === 'All' ? 'category-card--active' : ''}`} 
-              onClick={() => setActiveCategory('All')}
-            >
-              <div className="category-card__image-wrapper">
-                <div className="category-card__icon-overlay">
-                  <ShoppingBag size={32} />
+            <div className="hero-experience__actions">
+              <button className="hero-button hero-button--primary" onClick={handlePrimaryHero}>
+                {user ? 'Browse categories' : 'Sign in'}
+                <ArrowRight size={16} />
+              </button>
+              <button className="hero-button hero-button--ghost" onClick={handleSecondaryHero}>
+                {user ? 'Start selling' : 'Create account'}
+              </button>
+            </div>
+
+            <div className="hero-experience__stats">
+              {heroStats.map((stat) => (
+                <div key={stat.label} className="hero-experience__stat">
+                  <p className="hero-experience__stat-value">{stat.value}</p>
+                  <p className="hero-experience__stat-label">{stat.label}</p>
                 </div>
-              </div>
-              <div className="category-card__content">
-                <span className="category-card__label">All Products</span>
-                <span className="category-card__desc">Browse Everything</span>
-              </div>
-            </button>
-            {categories.map((cat) => (
-              <button 
-                key={cat.id} 
-                className={`category-card ${activeCategory === cat.label ? 'category-card--active' : ''}`} 
-                onClick={() => setActiveCategory(cat.label)}
-              >
-                <div className="category-card__image-wrapper">
-                  <img 
-                    src={cat.image} 
-                    alt={cat.label}
-                    className="category-card__image"
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                      e.target.parentElement.querySelector('.category-card__icon-overlay').style.display = 'flex';
-                    }}
-                  />
-                  <div className="category-card__icon-overlay" style={{ display: 'none' }}>
-                    <cat.Icon size={32} />
+              ))}
+            </div>
+          </div>
+
+          <div className="hero-experience__quote card card--glass animate-fadeUp">
+            <p className="hero-experience__quote-mark">“</p>
+            <p className="hero-experience__quote-copy">The most sustainable product is the one that already exists.</p>
+            <p className="hero-experience__quote-support">
+              Thoughtful resale makes good design last longer, travel further, and cost less.
+            </p>
+
+            {featured ? (
+              <button className="hero-experience__feature-card" onClick={() => navigate(`/product/${featured._id}`)}>
+                <div className="hero-experience__feature-media">
+                  <img src={featured.image} alt={featured.name} />
+                </div>
+                <div className="hero-experience__feature-body">
+                  <p className="hero-experience__feature-kicker">Current trending product</p>
+                  <h2>{featured.name}</h2>
+                  <p>{featured.city} • {featured.usageSummary}</p>
+                  <div className="hero-experience__feature-meta">
+                    <span>₹{featured.price.toLocaleString('en-IN')}</span>
+                    <strong>{compactNumber.format(featured.views)} views</strong>
                   </div>
                 </div>
-                <div className="category-card__content">
-                  <span className="category-card__label">{cat.label}</span>
-                  <span className="category-card__desc">{cat.description}</span>
-                </div>
               </button>
-            ))}
+            ) : null}
           </div>
         </div>
       </section>
 
-      {/* ── Products + Filters ───────────────────────────────── */}
-      <section className="section section--muted" id="products-section">
-        <div className="container">
+      <RevealOnScroll as="section" className="impact-section container" id="impact">
+        <div className="section-heading">
+          <p className="section-heading__eyebrow">Why LoopKart feels different</p>
+          <h2>Built around trust, value, and a more beautiful way to buy pre-owned products.</h2>
+        </div>
 
-          {/* Search + Filter bar */}
-          <div className="filter-bar">
-            <div className="filter-search">
-              <span className="filter-search__icon"><Search size={15} /></span>
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="filter-search__input"
-              />
-              {searchQuery && <button className="filter-search__clear" onClick={() => setSearchQuery('')}><X size={13} /></button>}
-            </div>
+        <div className="impact-grid">
+          {impactMoments.map((item, index) => (
+            <RevealOnScroll key={item.title} as="article" className="impact-card card" delay={index * 110}>
+              <span className="impact-card__icon">
+                <item.icon size={18} />
+              </span>
+              <h3>{item.title}</h3>
+              <p>{item.copy}</p>
+            </RevealOnScroll>
+          ))}
+        </div>
+      </RevealOnScroll>
 
-            <div className="filter-controls">
-              <select className="filter-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-                {SORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
-
-              <button className={`filter-toggle-btn ${showFilters ? 'filter-toggle-btn--active' : ''}`} onClick={() => setShowFilters((p) => !p)}>
-                <SlidersHorizontal size={14} /> Filters {hasActiveFilters && <span className="filter-dot" />}
-              </button>
-
-              {hasActiveFilters && (
-                <button className="filter-reset-btn" onClick={resetFilters}><X size={13} /> Clear All</button>
-              )}
-            </div>
-          </div>
-
-          {/* Expanded Filters Panel */}
-          {showFilters && (
-            <div className="filter-panel animate-fadeUp">
-              {/* Price Range */}
-              <div className="filter-group">
-                <p className="filter-group__label">Price Range</p>
-                <div className="filter-price-inputs">
-                  <div className="filter-price-input">
-                    <span>₹</span>
-                    <input type="number" value={priceRange[0]} min={0} max={priceRange[1]}
-                      onChange={(e) => setPriceRange([+e.target.value, priceRange[1]])} />
-                  </div>
-                  <span className="filter-price-sep">—</span>
-                  <div className="filter-price-input">
-                    <span>₹</span>
-                    <input type="number" value={priceRange[1]} min={priceRange[0]} max={maxPrice}
-                      onChange={(e) => setPriceRange([priceRange[0], +e.target.value])} />
-                  </div>
-                </div>
-                <input type="range" className="filter-range" min={0} max={maxPrice} value={priceRange[1]}
-                  onChange={(e) => setPriceRange([priceRange[0], +e.target.value])} />
-                <div className="filter-range-labels"><span>₹0</span><span>₹{maxPrice.toLocaleString()}</span></div>
-              </div>
-
-              {/* Min Rating */}
-              <div className="filter-group">
-                <p className="filter-group__label">Minimum Rating</p>
-                <div className="filter-rating-btns">
-                  {[0, 3, 3.5, 4, 4.5].map((r) => (
-                    <button key={r} className={`filter-rating-btn ${minRating === r ? 'filter-rating-btn--active' : ''}`} onClick={() => setMinRating(r)}>
-                      {r === 0 ? 'All' : `${r}★ & above`}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Discount filter */}
-              <div className="filter-group">
-                <p className="filter-group__label">Discount</p>
-                <div className="filter-rating-btns">
-                  {[
-                    { label: 'All', fn: () => { setSortBy('default'); } },
-                    { label: '10%+', fn: () => setSortBy('discount') },
-                    { label: '20%+', fn: () => setSortBy('discount') },
-                    { label: '40%+', fn: () => setSortBy('discount') },
-                  ].map((d, i) => (
-                    <button key={i} className="filter-rating-btn" onClick={d.fn}>{d.label}</button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Results header */}
-          <div className="section__header" style={{ marginTop: 24 }}>
-            <h2 className="section__title">
-              {searchQuery ? `Results for "${searchQuery}"` : activeCategory === 'All' ? 'Trending Products' : activeCategory}
+      <RevealOnScroll as="section" className="trending-section container" id="trending">
+        <div className="section-heading section-heading--row">
+          <div>
+            <p className="section-heading__eyebrow">
+              {selectedCategory ? 'Category view' : 'Browse by category'}
+            </p>
+            <h2>
+              {selectedCategory
+                ? `${selectedCategory} finds curated for their next owner.`
+                : 'Choose a category first, then explore the products inside it.'}
             </h2>
-            <span className="section__count">{filtered.length} product{filtered.length !== 1 ? 's' : ''}</span>
           </div>
-
-          {loading ? (
-            <ProductGrid products={[]} loading={true} />
-          ) : filtered.length === 0 ? (
-            <div className="products-empty animate-fadeUp">
-              <Package size={56} style={{ marginBottom: 12, opacity: 0.4 }} />
-              <p>No products found{searchQuery ? ` for "${searchQuery}"` : ''}.</p>
-              <button className="filter-reset-btn" style={{ marginTop: 12 }} onClick={resetFilters}>Clear Filters</button>
-            </div>
-          ) : (
-            <ProductGrid products={filtered} loading={false} />
-          )}
+          <p className="section-heading__support">
+            {selectedCategory
+              ? 'Hover to inspect maker, use history, and health score before opening the full product page.'
+              : 'Open any category to reveal the products that belong to it, then jump back whenever you want.'}
+          </p>
         </div>
-      </section>
 
-      {/* ── Banner ───────────────────────────────────────────── */}
-      <section className="banner" id="banner-section">
-        <div className="container banner__inner">
-          <div className="banner__content">
-            <span className="banner__tag">Limited Time Offer</span>
-            <h2 className="banner__title">Get 40% Off on Electronics</h2>
-            <p className="banner__desc">Use code <strong>LOOP40</strong> at checkout. Valid till stocks last.</p>
-            <button className="btn-hero-primary" onClick={() => { setActiveCategory('Electronics'); document.getElementById('products-section')?.scrollIntoView({ behavior: 'smooth' }); }}>Grab the Deal →</button>
-          </div>
-          <div className="banner__emoji"><Zap /></div>
-        </div>
-      </section>
-
-      {/* ── Features ─────────────────────────────────────────── */}
-      <section className="section">
-        <div className="container">
-          <div className="features">
-            {features.map((f, i) => (
-              <div key={i} className="feature-card">
-                <span className="feature-card__icon"><f.Icon size={32} /></span>
-                <div>
-                  <p className="feature-card__title">{f.title}</p>
-                  <p className="feature-card__desc">{f.desc}</p>
-                </div>
-              </div>
+        {loading ? (
+          <div className="trending-grid">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <div key={index} className="market-card market-card--skeleton" />
             ))}
           </div>
+        ) : categorySummaries.length === 0 ? (
+          <RevealOnScroll className="trending-empty card card--glass" delay={120}>
+            <PackageCheck size={28} />
+            <p>No marketplace items are live yet. Seed or add products to begin the showcase.</p>
+          </RevealOnScroll>
+        ) : !selectedCategory ? (
+          <div className="category-grid">
+            {categorySummaries.map((category, index) => (
+              <RevealOnScroll
+                key={category.name}
+                as="button"
+                className="category-card"
+                delay={index * 70}
+                onClick={() => {
+                  setSelectedCategory(category.name);
+                  setSearchQuery('');
+                }}
+              >
+                <img className="category-card__image" src={category.image} alt={category.name} />
+                <div className="category-card__overlay" />
+                <div className="category-card__content">
+                  <p className="category-card__eyebrow">{compactNumber.format(category.totalViews)} views tracked</p>
+                  <h3>{category.name}</h3>
+                  <p>{category.topProduct?.manufacturer || 'LoopKart'} • {category.count} products live</p>
+                </div>
+                <span className="category-card__action">
+                  Open category
+                  <ArrowRight size={15} />
+                </span>
+              </RevealOnScroll>
+            ))}
+          </div>
+        ) : (
+          <>
+            <div className="category-toolbar">
+              <button className="category-toolbar__back" onClick={() => {
+                setSelectedCategory(null);
+                setSearchQuery('');
+              }}>
+                <ArrowLeft size={16} />
+                Back to categories
+              </button>
+              <div className="market-search market-search--inline">
+                <div className="market-search__field">
+                  <Search size={18} />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(event) => setSearchQuery(event.target.value)}
+                    placeholder="Search in this category"
+                  />
+                  {searchQuery ? (
+                    <button type="button" className="market-search__clear" onClick={() => setSearchQuery('')}>
+                      <X size={16} />
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+              <p className="category-toolbar__meta">
+                {normalizedSearch
+                  ? `Showing ${visibleProducts.length} of ${selectedCategoryCount} matching products`
+                  : `Showing ${visibleProducts.length} of ${selectedCategoryCount} products`}
+              </p>
+            </div>
+
+            {filteredCategoryProducts.length === 0 ? (
+              <RevealOnScroll className="trending-empty card card--glass" delay={120}>
+                <PackageCheck size={28} />
+                <p>No products matched your search in this category yet.</p>
+              </RevealOnScroll>
+            ) : (
+              <div className="trending-grid">
+                {visibleProducts.map((product, index) => {
+                  const discountedBy = Math.max(1, Math.round((1 - product.price / product.originalPrice) * 100));
+                  const inCart = items.some((item) => item._id === product._id);
+
+                  return (
+                    <RevealOnScroll key={product._id} as="article" className="market-card" delay={index * 80}>
+                      <div className="market-card__media">
+                        <img src={product.image} alt={product.name} />
+                        <div className="market-card__topline">
+                          <span>{product.category}</span>
+                          <span>{conditionLabel(product.condition)}</span>
+                        </div>
+
+                        <button
+                          className={`market-card__wish ${isWishlisted(product._id) ? 'market-card__wish--active' : ''}`}
+                          onClick={() => toggleWishlist(product)}
+                        >
+                          <Heart size={15} fill={isWishlisted(product._id) ? 'currentColor' : 'none'} />
+                        </button>
+
+                        <div className="market-card__overlay">
+                          <div className="market-card__facts">
+                            <span>{product.manufacturer}</span>
+                            <span>{product.material}</span>
+                            <span>Used {product.usageMonths} months</span>
+                            <span>Health score {product.healthScore}/100</span>
+                          </div>
+                          <p>{product.usageSummary}</p>
+                          <div className="market-card__overlay-actions">
+                            <button onClick={() => navigate(`/product/${product._id}`)}>View</button>
+                            <button onClick={() => handleQuickAdd(product)}>{inCart ? 'Added' : 'Quick add'}</button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="market-card__body">
+                        <div className="market-card__seller">
+                          <BadgeCheck size={15} />
+                          <span>{product.sellerName}</span>
+                        </div>
+                        <h3>{product.name}</h3>
+                        <p className="market-card__usage">{product.city} • {product.usageSummary}</p>
+
+                        <div className="market-card__meta">
+                          <span>★ {product.rating}</span>
+                          <span>{compactNumber.format(product.reviews)} reviews</span>
+                          <span>{compactNumber.format(product.views)} views</span>
+                        </div>
+
+                        <div className="market-card__price-row">
+                          <div>
+                            <strong>₹{product.price.toLocaleString('en-IN')}</strong>
+                            <span>₹{product.originalPrice.toLocaleString('en-IN')}</span>
+                          </div>
+                          <em>{discountedBy}% off</em>
+                        </div>
+
+                        <div className="market-card__footer">
+                          <span className="market-card__impact">
+                            <Leaf size={14} />
+                            {product.carbonSavedKg}kg CO2 saved
+                          </span>
+                          <button className="market-card__cta" onClick={() => navigate(`/product/${product._id}`)}>
+                            View
+                          </button>
+                        </div>
+                      </div>
+                    </RevealOnScroll>
+                  );
+                })}
+              </div>
+            )}
+          </>
+        )}
+      </RevealOnScroll>
+
+      <RevealOnScroll as="section" className="closing-cta container">
+        <div className="closing-cta__card card card--glass">
+          <div>
+            <p className="section-heading__eyebrow">Built for real resale businesses</p>
+            <h2>Ready to turn LoopKart into a serious circular commerce brand.</h2>
+            <p>
+              The new shell is already geared for premium discovery, seller-led inventory, better auth, and richer product storytelling.
+            </p>
+          </div>
+
+          <div className="closing-cta__actions">
+            <button className="hero-button hero-button--primary" onClick={handleSecondaryHero}>
+              {user ? 'Open seller flow' : 'Create your account'}
+            </button>
+            <button className="hero-button hero-button--ghost" onClick={handlePrimaryHero}>
+              {user ? 'See trending again' : 'Sign in instead'}
+            </button>
+          </div>
         </div>
-      </section>
+      </RevealOnScroll>
     </div>
   );
 }

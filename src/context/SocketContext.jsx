@@ -2,9 +2,15 @@ import { createContext, useContext, useEffect, useState, useRef, useCallback } f
 import { io } from 'socket.io-client';
 
 const SocketContext = createContext(null);
+const socketUrl = (
+  import.meta.env.VITE_SOCKET_URL ||
+  import.meta.env.VITE_API_URL ||
+  'http://localhost:5001/api'
+).replace(/\/api\/?$/, '');
 
 export const SocketProvider = ({ children, token }) => {
   const socketRef             = useRef(null);
+  const [socket, setSocket] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [connected, setConnected]     = useState(false);
 
@@ -19,55 +25,47 @@ export const SocketProvider = ({ children, token }) => {
 
     if (!token) return;
 
-    const socket = io('https://loopkart-be.onrender.com', {
-      auth:       { token },
-      transports: ['websocket', 'polling'],
-      reconnectionAttempts: 5,
-      reconnectionDelay:    1000,
-      timeout: 10000,
+    const socket = io(socketUrl, {
+      auth: { token },
+      withCredentials: true,
+      reconnectionAttempts: 3,
+      reconnectionDelay: 1500,
     });
 
     socketRef.current = socket;
+    setSocket(socket);
 
-    socket.on('connect', () => {
-      console.log('✅ Socket connected:', socket.id);
-      setConnected(true);
-    });
-    socket.on('disconnect', () => {
-      console.log('❌ Socket disconnected');
-      setConnected(false);
-    });
+    socket.on('connect',      ()      => setConnected(true));
+    socket.on('disconnect',   ()      => setConnected(false));
     socket.on('connect_error', (error) => {
-      console.error('Socket connection error:', error);
+      setConnected(false);
+
+      // Invalid auth should not keep hammering the socket endpoint.
+      if (error.message === 'Auth failed' || error.message === 'No token') {
+        socket.disconnect();
+      }
     });
-    socket.on('online_users', (users) => {
-      console.log('👥 Online users:', users);
-      setOnlineUsers(users);
-    });
-    socket.on('user_online', (id) => {
-      console.log('🟢 User online:', id);
-      setOnlineUsers((prev) => [...new Set([...prev, id])]);
-    });
-    socket.on('user_offline', (id) => {
-      console.log('⚫ User offline:', id);
-      setOnlineUsers((prev) => prev.filter((u) => u !== id));
-    });
+    socket.on('online_users', (users) => setOnlineUsers(users));
+    socket.on('user_online',  (id)    => setOnlineUsers((prev) => [...new Set([...prev, id])]));
+    socket.on('user_offline', (id)    => setOnlineUsers((prev) => prev.filter((u) => u !== id)));
 
     return () => {
+      socket.off('connect');
+      socket.off('disconnect');
+      socket.off('connect_error');
+      socket.off('online_users');
+      socket.off('user_online');
+      socket.off('user_offline');
       socket.disconnect();
       socketRef.current = null;
+      setSocket(null);
     };
   }, [token]);
 
-  const isOnline = useCallback((userId) => {
-    const result = onlineUsers.includes(userId?.toString());
-    console.log(`Checking if user ${userId} is online:`, result);
-    console.log('All online users:', onlineUsers);
-    return result;
-  }, [onlineUsers]);
+  const isOnline = useCallback((userId) => onlineUsers.includes(userId?.toString()), [onlineUsers]);
 
   return (
-    <SocketContext.Provider value={{ socket: socketRef.current, onlineUsers, isOnline, connected }}>
+    <SocketContext.Provider value={{ socket, onlineUsers, isOnline, connected }}>
       {children}
     </SocketContext.Provider>
   );

@@ -1,73 +1,58 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { GoogleLogin } from '@react-oauth/google';
-import { jwtDecode } from 'jwt-decode';
+import { ArrowRight, LockKeyhole, Mail, ShieldCheck, Sparkles, UserRound } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
+import AuthShell from '../../components/auth/AuthShell';
+import GoogleAuthButton from '../../components/auth/GoogleAuthButton';
 import './LoginPage.css';
-
-const UserIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="8" r="4"/>
-    <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-  </svg>
-);
-
-const EmailIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="2" y="4" width="20" height="16" rx="2"/>
-    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-  </svg>
-);
-
-const LockIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-  </svg>
-);
 
 export default function RegisterPage() {
   const { saveAuth } = useAuth();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' });
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const validate = () => {
-    const e = {};
-    if (!form.name.trim()) e.name = 'Full name is required';
-    else if (form.name.trim().length < 2) e.name = 'Name must be at least 2 characters';
+    const nextErrors = {};
 
-    if (!form.email.trim()) e.email = 'Email is required';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Enter a valid email';
+    if (!form.name.trim()) nextErrors.name = 'Full name is required';
+    else if (form.name.trim().length < 2) nextErrors.name = 'Use at least 2 characters';
 
-    if (!form.password) e.password = 'Password is required';
-    else if (form.password.length < 6) e.password = 'Minimum 6 characters';
+    if (!form.email.trim()) nextErrors.email = 'Email is required';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) nextErrors.email = 'Enter a valid email address';
 
-    if (!form.confirmPassword) e.confirmPassword = 'Please confirm your password';
-    else if (form.confirmPassword !== form.password) e.confirmPassword = 'Passwords do not match';
+    if (!form.password) nextErrors.password = 'Password is required';
+    else if (form.password.length < 6) nextErrors.password = 'Minimum 6 characters';
 
-    return e;
+    if (!form.confirmPassword) nextErrors.confirmPassword = 'Please confirm your password';
+    else if (form.confirmPassword !== form.password) nextErrors.confirmPassword = 'Passwords do not match';
+
+    return nextErrors;
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-    setErrors((prev) => ({ ...prev, [name]: '' }));
-    setServerError('');
-  };
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const nextErrors = validate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const errs = validate();
-    if (Object.keys(errs).length) { setErrors(errs); return; }
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      return;
+    }
 
     setLoading(true);
+    setServerError('');
+
     try {
       const { data } = await api.post('/auth/register', {
         name: form.name.trim(),
@@ -76,133 +61,129 @@ export default function RegisterPage() {
       });
       saveAuth(data);
       navigate('/');
-    } catch (err) {
-      setServerError(err.response?.data?.message || 'Registration failed. Please try again.');
+    } catch (error) {
+      setServerError(error.response?.data?.message || 'Account creation failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleSuccess = async (credentialResponse) => {
-    try {
-      const decoded = jwtDecode(credentialResponse.credential);
-      const { data } = await api.post('/auth/google', {
-        email: decoded.email,
-        name: decoded.name,
-        googleId: decoded.sub,
-        avatar: decoded.picture
-      });
-      saveAuth(data);
-      navigate('/');
-    } catch (err) {
-      setServerError(err.response?.data?.message || 'Google signup failed. Please try again.');
-    }
-  };
-
-  const handleGoogleError = () => {
-    setServerError('Google signup failed. Please try again.');
+  const updateField = (field, value) => {
+    setForm((current) => ({ ...current, [field]: value }));
+    setErrors((current) => ({ ...current, [field]: '' }));
+    setServerError('');
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-card animate-fadeUp">
-
-        {/* Brand */}
-        <div className="auth-brand">
-          <span className="auth-brand__logo">🛒</span>
-          <span className="auth-brand__name">LoopKart</span>
-        </div>
-
-        <h1 className="auth-title">Create account</h1>
-        <p className="auth-subtitle">Join LoopKart and start shopping</p>
-
-        {/* Server error */}
-        {serverError && (
-          <div className="auth-alert animate-shake">{serverError}</div>
-        )}
-
-        <form onSubmit={handleSubmit} noValidate className="auth-form">
-          <Input
-            label="Full Name"
-            name="name"
-            type="text"
-            placeholder="Enter your name"
-            value={form.name}
-            onChange={handleChange}
-            error={errors.name}
-            icon={<UserIcon />}
-            autoComplete="name"
-            required
-          />
-
-          <Input
-            label="Email"
-            name="email"
-            type="email"
-            placeholder="you@example.com"
-            value={form.email}
-            onChange={handleChange}
-            error={errors.email}
-            icon={<EmailIcon />}
-            autoComplete="email"
-            required
-          />
-
-          <Input
-            label="Password"
-            name="password"
-            type="password"
-            placeholder="Create a password"
-            value={form.password}
-            onChange={handleChange}
-            error={errors.password}
-            icon={<LockIcon />}
-            autoComplete="new-password"
-            required
-          />
-
-          <Input
-            label="Confirm Password"
-            name="confirmPassword"
-            type="password"
-            placeholder="Repeat your password"
-            value={form.confirmPassword}
-            onChange={handleChange}
-            error={errors.confirmPassword}
-            icon={<LockIcon />}
-            autoComplete="new-password"
-            required
-          />
-
-          <Button type="submit" fullWidth loading={loading} size="lg">
-            Create Account
-          </Button>
-        </form>
-
-        {/* Social Login Divider */}
-        <div className="auth-divider">
-          <span>or continue with</span>
-        </div>
-
-        {/* Social Login Buttons */}
-        <div className="auth-social">
-          <GoogleLogin
-            onSuccess={handleGoogleSuccess}
-            onError={handleGoogleError}
-            useOneTap
-            theme="outline"
-            size="large"
-            text="signup_with"
-            shape="rectangular"
-            width="100%"
-          />
-        </div>
-
-        <p className="auth-switch">
-          Already have an account?{' '}
-          <Link to="/login">Sign in</Link>
+    <AuthShell
+      eyebrow="Seller and buyer onboarding"
+      title="Create your LoopKart identity."
+      subtitle="Start buying beautiful second-hand finds or open your own high-trust resale storefront in minutes."
+      asideTitle="Built for serious resale from day one."
+      asideText="The new LoopKart experience balances aspiration with transparency so sellers look credible and buyers feel confident at first glance."
+      highlights={[
+        { icon: '✦', title: 'Premium profile setup', copy: 'Your account becomes the foundation for trust, wishlist memory, and seller reputation.' },
+        { icon: '↺', title: 'Ready for circular commerce', copy: 'One account lets you buy today and list tomorrow without switching platforms.' },
+        { icon: '⟡', title: 'Google sign-in ready', copy: 'OAuth support activates automatically once your Google client ID is configured.' },
+      ]}
+      stats={[
+        { value: '301', label: 'top seller orders fulfilled' },
+        { value: '4.9', label: 'average seller rating' },
+        { value: '16', label: 'dummy products already staged locally' },
+      ]}
+      footer={
+        <p className="auth-shell__footer">
+          Already have an account? <Link to="/login">Sign in instead</Link>
         </p>
+      }
+    >
+      <div className="auth-panel__header">
+        <p className="auth-panel__kicker">Create account</p>
+        <h2>Join the premium resale loop.</h2>
       </div>
-    </div>
+
+      {serverError ? <div className="auth-panel__alert">{serverError}</div> : null}
+
+      <form className="auth-panel__form" onSubmit={handleSubmit}>
+        <Input
+          label="Full name"
+          name="name"
+          type="text"
+          placeholder="Your name"
+          value={form.name}
+          onChange={(event) => updateField('name', event.target.value)}
+          icon={<UserRound size={18} />}
+          error={errors.name}
+          required
+        />
+
+        <Input
+          label="Email"
+          name="email"
+          type="email"
+          placeholder="you@example.com"
+          value={form.email}
+          onChange={(event) => updateField('email', event.target.value)}
+          icon={<Mail size={18} />}
+          error={errors.email}
+          required
+        />
+
+        <Input
+          label="Password"
+          name="password"
+          type="password"
+          placeholder="Create a password"
+          value={form.password}
+          onChange={(event) => updateField('password', event.target.value)}
+          icon={<LockKeyhole size={18} />}
+          error={errors.password}
+          required
+        />
+
+        <Input
+          label="Confirm password"
+          name="confirmPassword"
+          type="password"
+          placeholder="Repeat the password"
+          value={form.confirmPassword}
+          onChange={(event) => updateField('confirmPassword', event.target.value)}
+          icon={<LockKeyhole size={18} />}
+          error={errors.confirmPassword}
+          required
+        />
+
+        <div className="auth-panel__meta">
+          <div className="auth-panel__meta-item">
+            <ShieldCheck size={14} />
+            <span>Email signup is live now. OTP confirmation can be layered in when your mail credentials are ready.</span>
+          </div>
+        </div>
+
+        <Button type="submit" fullWidth size="lg" loading={loading}>
+          Create account
+          <ArrowRight size={16} />
+        </Button>
+      </form>
+
+      <div className="auth-panel__divider">
+        <span>or continue with</span>
+      </div>
+
+      <GoogleAuthButton
+        onAuthSuccess={(data) => {
+          saveAuth(data);
+          navigate('/');
+        }}
+        onAuthError={setServerError}
+      />
+
+      <div className="auth-panel__footnotes">
+        <div className="auth-panel__footnote">
+          <Sparkles size={14} />
+          <span>One identity for buying and selling</span>
+        </div>
+      </div>
+    </AuthShell>
   );
 }

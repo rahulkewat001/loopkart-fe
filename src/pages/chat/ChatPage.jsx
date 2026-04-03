@@ -4,7 +4,6 @@ import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
 import api from '../../utils/api';
 import Navbar from '../../components/layout/Navbar';
-import ChatTemplates from '../../components/chat/ChatTemplates';
 import './ChatPage.css';
 
 const formatTime = (date) => {
@@ -50,8 +49,6 @@ export default function ChatPage() {
   useEffect(() => {
     if (!chatId) return;
     api.get(`/chats/${chatId}`).then(({ data }) => {
-      console.log('Chat loaded:', data.chat);
-      console.log('Participants:', data.chat.participants);
       setActiveChat(data.chat);
       setMessages(data.chat.messages || []);
       // Update unread count in list
@@ -63,18 +60,15 @@ export default function ChatPage() {
   useEffect(() => {
     if (!socket || !chatId) return;
 
-    console.log('Joining chat:', chatId);
     socket.emit('join_chat', chatId);
 
     const handleNewMessage = ({ chatId: cId, message }) => {
-      console.log('New message received:', message);
       if (cId === chatId) {
-        setMessages((prev) => {
-          // Avoid duplicates
-          const exists = prev.some(m => m._id === message._id);
-          if (exists) return prev;
-          return [...prev, message];
-        });
+        setMessages((prev) => (
+          prev.some((entry) => entry._id?.toString() === message._id?.toString())
+            ? prev
+            : [...prev, message]
+        ));
         socket.emit('mark_read', { chatId });
       }
       // Update last message in chat list
@@ -96,13 +90,9 @@ export default function ChatPage() {
     };
   }, [socket, chatId]);
 
-  // Auto scroll to bottom only when new messages arrive
-  const prevMessagesLength = useRef(messages.length);
+  // Auto scroll to bottom
   useEffect(() => {
-    if (messages.length > prevMessagesLength.current) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }
-    prevMessagesLength.current = messages.length;
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   const getOtherParticipant = useCallback((chat) => {
@@ -112,37 +102,25 @@ export default function ChatPage() {
   const handleSend = async (e) => {
     e.preventDefault();
     if (!text.trim() || sending) return;
-    
+    setSending(true);
+
     const sentText = text.trim();
     setText('');
-    setSending(true);
+    clearTimeout(typingTimeout.current);
 
     try {
       if (socket?.connected) {
-        console.log('Sending message via socket:', sentText);
         socket.emit('send_message', { chatId, text: sentText });
         socket.emit('typing', { chatId, isTyping: false });
       } else {
-        console.log('Socket not connected, using REST API');
+        // Fallback to REST
         const { data } = await api.post(`/chats/${chatId}/messages`, { text: sentText });
-        // Manually add message if socket not working
-        const newMsg = {
-          _id: data.message._id,
-          sender: user._id,
-          senderName: user.name,
-          text: sentText,
-          createdAt: new Date(),
-          read: false
-        };
-        setMessages((prev) => [...prev, newMsg]);
+        setMessages((prev) => [...prev, data.message]);
       }
       setChats((prev) => prev.map((c) => c._id === chatId ? { ...c, lastMessage: sentText, lastMessageAt: new Date() } : c));
-    } catch (error) {
-      console.error('Failed to send message:', error);
+    } catch {
       setText(sentText);
-    } finally {
-      setSending(false);
-    }
+    } finally { setSending(false); }
   };
 
   const handleTyping = (e) => {
@@ -239,9 +217,6 @@ export default function ChatPage() {
               {activeChat && (() => {
                 const other  = getOtherParticipant(activeChat);
                 const online = isOnline(other?._id);
-                console.log('Other user:', other);
-                console.log('Other user ID:', other?._id);
-                console.log('Is online:', online);
                 return (
                   <div className="chat-header">
                     <button className="chat-header__back" onClick={() => navigate('/chat')}>←</button>
@@ -303,16 +278,11 @@ export default function ChatPage() {
 
               {/* Input */}
               <form className="chat-input-bar" onSubmit={handleSend}>
-                <ChatTemplates 
-                  onSelectTemplate={(template) => setText(template)}
-                  productPrice={activeChat?.productPrice || 5000}
-                />
                 <input
                   className="chat-input"
                   placeholder="Type a message..."
                   value={text}
                   onChange={handleTyping}
-                  onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend(e)}
                   autoFocus
                 />
                 <button type="submit" className="chat-send-btn" disabled={!text.trim() || sending}>

@@ -1,10 +1,9 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
 import Navbar from '../../components/layout/Navbar';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
-import { Camera } from 'lucide-react';
 import './ProfilePage.css';
 
 export default function ProfilePage() {
@@ -16,8 +15,6 @@ export default function ProfilePage() {
   const [msg, setMsg]           = useState('');
   const [err, setErr]           = useState('');
   const [loading, setLoading]   = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef(null);
 
   const handleProfile = async (e) => {
     e.preventDefault();
@@ -45,27 +42,6 @@ export default function ProfilePage() {
     } finally { setLoading(false); }
   };
 
-  const handleAvatarClick = () => fileInputRef.current?.click();
-
-  const handleAvatarUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) { setErr('Please select an image file'); return; }
-    if (file.size > 5 * 1024 * 1024) { setErr('Image must be less than 5MB'); return; }
-    
-    setUploading(true); setMsg(''); setErr('');
-    const formData = new FormData();
-    formData.append('avatar', file);
-    
-    try {
-      const { data } = await api.post('/profile/avatar', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-      updateUser(data.user);
-      setMsg('Profile picture updated!');
-    } catch (error) {
-      setErr(error.response?.data?.message || 'Upload failed');
-    } finally { setUploading(false); }
-  };
-
   const initials = user?.name?.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) || '?';
 
   return (
@@ -75,18 +51,7 @@ export default function ProfilePage() {
 
         {/* Header */}
         <div className="profile-header animate-fadeUp">
-          <div className="profile-avatar-wrapper" onClick={handleAvatarClick}>
-            {user?.avatar ? (
-              <img src={user.avatar} alt={user.name} className="profile-avatar-img" />
-            ) : (
-              <div className="profile-avatar">{initials}</div>
-            )}
-            <div className="profile-avatar-overlay">
-              <Camera size={20} />
-            </div>
-            {uploading && <div className="profile-avatar-loading">Uploading...</div>}
-          </div>
-          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarUpload} style={{ display: 'none' }} />
+          <div className="profile-avatar">{initials}</div>
           <div>
             <h1 className="profile-name">{user?.name}</h1>
             <p className="profile-email">{user?.email}</p>

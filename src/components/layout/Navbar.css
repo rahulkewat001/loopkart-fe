@@ -453,6 +453,12 @@
   width: 280px;
 }
 
+.navbar-premium__dropdown--location,
+.navbar-premium__dropdown--compare,
+.navbar-premium__dropdown--lang {
+  width: 280px;
+}
+
 .dropdown__header {
   display: flex;
   align-items: center;
@@ -655,6 +661,12 @@
   color: #ff4757;
 }
 
+.dropdown__link--active {
+  background: linear-gradient(135deg, #fff9e6, #fff);
+  color: #d4af37;
+  font-weight: 600;
+}
+
 /* ─── Cart Preview ────────────────────────────────────────────── */
 .cart-preview__items {
   padding: 20px;
@@ -688,6 +700,58 @@
 .cart-preview__btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+}
+
+/* ─── Location Item ───────────────────────────────────────────── */
+.location-item {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.location-current {
+  font-size: 14px;
+  font-weight: 500;
+  color: #2b1a0f;
+  padding: 12px;
+  background: #f8f8f8;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.location-current::before {
+  content: '📍';
+  font-size: 18px;
+}
+
+.location-change {
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #d4af37, #f4d03f);
+  color: #2b1a0f;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.location-change:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+}
+
+/* ─── Moon Icon Animation ─────────────────────────────────────── */
+.moon-active {
+  animation: moonRotate 0.5s ease;
+}
+
+@keyframes moonRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* ─── Hamburger ───────────────────────────────────────────────── */
@@ -803,6 +867,30 @@
 [data-tooltip]:hover::after {
   opacity: 1;
   transform: translateX(-50%) scale(1);
+}
+
+/* ─── Ripple Effect ───────────────────────────────────────────── */
+.navbar-premium__icon-btn {
+  overflow: hidden;
+  position: relative;
+}
+
+.navbar-premium__icon-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(212, 175, 55, 0.4);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.navbar-premium__icon-btn:active::before {
+  width: 100px;
+  height: 100px;
 }
 
 /* ─── Animations ──────────────────────────────────────────────── */

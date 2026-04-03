@@ -30,10 +30,18 @@ export default function Navbar({ onSearch }) {
   const [searchFocused, setSearchFocused] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [compareOpen, setCompareOpen] = useState(false);
+  const [locationOpen, setLocationOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
+  const [location, setLocation] = useState('Mumbai, 400001');
+  const [language, setLanguage] = useState('English');
   const dropRef  = useRef(null);
   const notifRef = useRef(null);
   const searchRef = useRef(null);
   const cartRef = useRef(null);
+  const compareRef = useRef(null);
+  const locationRef = useRef(null);
+  const langRef = useRef(null);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
@@ -46,6 +54,9 @@ export default function Navbar({ onSearch }) {
       if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false);
       if (searchRef.current && !searchRef.current.contains(e.target)) { setShowSuggestions(false); setSearchFocused(false); }
       if (cartRef.current && !cartRef.current.contains(e.target)) setCartOpen(false);
+      if (compareRef.current && !compareRef.current.contains(e.target)) setCompareOpen(false);
+      if (locationRef.current && !locationRef.current.contains(e.target)) setLocationOpen(false);
+      if (langRef.current && !langRef.current.contains(e.target)) setLangOpen(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
@@ -89,6 +100,25 @@ export default function Navbar({ onSearch }) {
     setSearch('');
     navigate(`/product/${product._id}`);
   };
+
+  const handleVoiceSearch = () => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setSearch(transcript);
+      };
+      recognition.start();
+    } else {
+      alert('Voice search not supported in your browser');
+    }
+  };
+
+  const handleImageSearch = () => {
+    alert('Image search feature coming soon!');
+  };
   const handleLogout = async () => { await logout(); navigate('/login'); };
   const initials = user?.name ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) : '?';
 
@@ -117,10 +147,10 @@ export default function Navbar({ onSearch }) {
               onFocus={() => { setSearchFocused(true); setShowSuggestions(true); }}
               className="navbar-premium__search-input" 
             />
-            <button type="button" className="navbar-premium__search-btn" title="Voice Search">
+            <button type="button" className="navbar-premium__search-btn" title="Voice Search" onClick={handleVoiceSearch}>
               <Mic size={18} />
             </button>
-            <button type="button" className="navbar-premium__search-btn" title="Image Search">
+            <button type="button" className="navbar-premium__search-btn" title="Image Search" onClick={handleImageSearch}>
               <Camera size={18} />
             </button>
           </form>
@@ -162,14 +192,44 @@ export default function Navbar({ onSearch }) {
         {/* Actions */}
         <div className="navbar-premium__actions">
           {/* Location */}
-          <button className="navbar-premium__icon-btn" data-tooltip="Delivery Location">
-            <MapPin size={20} />
-          </button>
+          <div className="navbar-premium__dropdown-wrapper" ref={locationRef}>
+            <button className="navbar-premium__icon-btn" data-tooltip="Delivery Location" onClick={() => setLocationOpen((p) => !p)}>
+              <MapPin size={20} />
+            </button>
+            {locationOpen && (
+              <div className="navbar-premium__dropdown navbar-premium__dropdown--location animate-fadeIn">
+                <div className="dropdown__header">
+                  <p className="dropdown__title"><MapPin size={16} /> Delivery Location</p>
+                </div>
+                <div className="dropdown__list">
+                  <div className="location-item">
+                    <p className="location-current">{location}</p>
+                    <button className="location-change" onClick={() => { const newLoc = prompt('Enter your location:', location); if (newLoc) setLocation(newLoc); setLocationOpen(false); }}>Change</button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Compare */}
-          <button className="navbar-premium__icon-btn" data-tooltip="Compare Products">
-            <GitCompare size={20} />
-          </button>
+          <div className="navbar-premium__dropdown-wrapper" ref={compareRef}>
+            <button className="navbar-premium__icon-btn" data-tooltip="Compare Products" onClick={() => setCompareOpen((p) => !p)}>
+              <GitCompare size={20} />
+            </button>
+            {compareOpen && (
+              <div className="navbar-premium__dropdown navbar-premium__dropdown--compare animate-fadeIn">
+                <div className="dropdown__header">
+                  <p className="dropdown__title"><GitCompare size={16} /> Compare Products</p>
+                </div>
+                <div className="dropdown__list">
+                  <div className="dropdown__empty">
+                    <GitCompare size={32} />
+                    <p>No products to compare</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Wishlist */}
           <Link to="/wishlist" className="navbar-premium__icon-btn navbar-premium__icon-btn--animated" data-tooltip="Wishlist">
@@ -270,13 +330,29 @@ export default function Navbar({ onSearch }) {
           </div>
 
           {/* Language */}
-          <button className="navbar-premium__icon-btn" data-tooltip="Language">
-            <Globe size={20} />
-          </button>
+          <div className="navbar-premium__dropdown-wrapper" ref={langRef}>
+            <button className="navbar-premium__icon-btn" data-tooltip="Language" onClick={() => setLangOpen((p) => !p)}>
+              <Globe size={20} />
+            </button>
+            {langOpen && (
+              <div className="navbar-premium__dropdown navbar-premium__dropdown--lang animate-fadeIn">
+                <div className="dropdown__header">
+                  <p className="dropdown__title"><Globe size={16} /> Select Language</p>
+                </div>
+                <div className="dropdown__list">
+                  {['English', 'हिन्दी', 'मराठी', 'தமிழ்', 'తెలుగు', 'বাংলা'].map((lang) => (
+                    <button key={lang} className={`dropdown__link ${language === lang ? 'dropdown__link--active' : ''}`} onClick={() => { setLanguage(lang); setLangOpen(false); }}>
+                      {lang}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Dark Mode */}
-          <button className="navbar-premium__icon-btn" onClick={() => setDark((d) => !d)} data-tooltip="Dark Mode">
-            <Moon size={20} />
+          <button className="navbar-premium__icon-btn" onClick={() => setDark((d) => !d)} data-tooltip={dark ? 'Light Mode' : 'Dark Mode'}>
+            <Moon size={20} className={dark ? 'moon-active' : ''} />
           </button>
 
           {/* User Profile */}

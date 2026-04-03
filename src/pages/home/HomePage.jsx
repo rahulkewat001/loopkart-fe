@@ -11,6 +11,7 @@ import { useWishlist } from '../../context/WishlistContext';
 import { useToast } from '../../components/ui/Toast/ToastContext';
 import Navbar from '../../components/layout/Navbar';
 import HeroSlider from '../../components/layout/HeroSlider';
+import TrendingProducts from '../../components/product/TrendingProducts';
 import './HomePage.css';
 
 const categories = [
@@ -137,6 +138,9 @@ export default function HomePage() {
 
       {/* ── Premium Hero Slider ─────────────────────────────── */}
       <HeroSlider />
+
+      {/* ── Trending Products ────────────────────────────────── */}
+      <TrendingProducts />
 
       {/* ── Categories ───────────────────────────────────────── */}
       <section className="section">

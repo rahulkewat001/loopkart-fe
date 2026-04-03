@@ -104,7 +104,7 @@ export default function RegisterPage() {
             label="Full Name"
             name="name"
             type="text"
-            placeholder="John Doe"
+            placeholder="Enter your name"
             value={form.name}
             onChange={handleChange}
             error={errors.name}

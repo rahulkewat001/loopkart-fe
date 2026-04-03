@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
+import { GoogleOAuthProvider } from '@react-oauth/google'
 import { AuthProvider }         from './context/AuthContext.jsx'
 import { CartProvider }         from './context/CartContext.jsx'
 import { WishlistProvider }     from './context/WishlistContext.jsx'
@@ -19,18 +20,20 @@ const SocketWrapper = ({ children }) => {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <AuthProvider>
-      <CartProvider>
-        <WishlistProvider>
-          <ToastProvider>
-            <NotificationProvider>
-              <SocketWrapper>
-                <App />
-              </SocketWrapper>
-            </NotificationProvider>
-          </ToastProvider>
-        </WishlistProvider>
-      </CartProvider>
-    </AuthProvider>
+    <GoogleOAuthProvider clientId="YOUR_GOOGLE_CLIENT_ID">
+      <AuthProvider>
+        <CartProvider>
+          <WishlistProvider>
+            <ToastProvider>
+              <NotificationProvider>
+                <SocketWrapper>
+                  <App />
+                </SocketWrapper>
+              </NotificationProvider>
+            </ToastProvider>
+          </WishlistProvider>
+        </CartProvider>
+      </AuthProvider>
+    </GoogleOAuthProvider>
   </React.StrictMode>
 )

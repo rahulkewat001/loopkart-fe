@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../components/ui/Toast/ToastContext';
 import api from '../../utils/api';
 import Navbar from '../../components/layout/Navbar';
 import Button from '../../components/ui/Button';
@@ -8,6 +9,7 @@ import './ProfilePage.css';
 
 export default function ProfilePage() {
   const { user, updateUser } = useAuth();
+  const { toast } = useToast();
   const [tab, setTab] = useState('profile');
 
   const [form, setForm]         = useState({ name: user?.name || '', email: user?.email || '' });
@@ -15,6 +17,8 @@ export default function ProfilePage() {
   const [msg, setMsg]           = useState('');
   const [err, setErr]           = useState('');
   const [loading, setLoading]   = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState(user?.avatar || null);
 
   const handleProfile = async (e) => {
     e.preventDefault();
@@ -42,6 +46,54 @@ export default function ProfilePage() {
     } finally { setLoading(false); }
   };
 
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    if (!file.type.startsWith('image/')) {
+      toast('Please upload an image file', 'error');
+      return;
+    }
+    
+    if (file.size > 5 * 1024 * 1024) {
+      toast('Image size should be less than 5MB', 'error');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      
+      try {
+        const { data } = await api.post('/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        
+        // Update avatar on server
+        const { data: userData } = await api.put('/profile/avatar', { avatar: data.url });
+        updateUser(userData.user);
+        setAvatarPreview(data.url);
+        toast('Profile picture updated!', 'success');
+      } catch (uploadErr) {
+        // Fallback to base64
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          const base64String = reader.result;
+          const { data: userData } = await api.put('/profile/avatar', { avatar: base64String });
+          updateUser(userData.user);
+          setAvatarPreview(base64String);
+          toast('Profile picture updated!', 'success');
+        };
+        reader.readAsDataURL(file);
+      }
+    } catch (err) {
+      toast('Failed to update profile picture', 'error');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const initials = user?.name?.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) || '?';
 
   return (
@@ -51,7 +103,27 @@ export default function ProfilePage() {
 
         {/* Header */}
         <div className="profile-header animate-fadeUp">
-          <div className="profile-avatar">{initials}</div>
+          <div className="profile-avatar-wrapper">
+            {avatarPreview ? (
+              <img src={avatarPreview} alt={user?.name} className="profile-avatar-img" />
+            ) : (
+              <div className="profile-avatar">{initials}</div>
+            )}
+            <label className="profile-avatar-upload">
+              <input 
+                type="file" 
+                accept="image/*" 
+                onChange={handleAvatarUpload}
+                disabled={uploading}
+                style={{ display: 'none' }}
+              />
+              {uploading ? (
+                <div className="upload-spinner-small"></div>
+              ) : (
+                <span>📷</span>
+              )}
+            </label>
+          </div>
           <div>
             <h1 className="profile-name">{user?.name}</h1>
             <p className="profile-email">{user?.email}</p>

@@ -23,6 +23,7 @@ export default function Navbar({ onSearch }) {
   const { dark, toggleTheme }    = useTheme();
   const { language, setLanguage, t } = useLanguage();
   const navigate                 = useNavigate();
+  const [search, setSearch]      = useState('');
   const [menuOpen, setMenuOpen]  = useState(false);
   const [dropOpen, setDropOpen]  = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);

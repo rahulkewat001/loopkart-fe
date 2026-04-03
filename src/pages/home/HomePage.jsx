@@ -196,10 +196,7 @@ export default function HomePage() {
           <div className="categories">
             <button 
               className={`category-card ${activeCategory === 'All' ? 'category-card--active' : ''}`} 
-              onClick={() => {
-                setActiveCategory('All');
-                document.getElementById('products-section')?.scrollIntoView({ behavior: 'smooth' });
-              }}
+              onClick={() => setActiveCategory('All')}
             >
               <div className="category-card__image-wrapper">
                 <div className="category-card__icon-overlay">
@@ -215,10 +212,7 @@ export default function HomePage() {
               <button 
                 key={cat.id} 
                 className={`category-card ${activeCategory === cat.label ? 'category-card--active' : ''}`} 
-                onClick={() => {
-                  setActiveCategory(cat.label);
-                  document.getElementById('products-section')?.scrollIntoView({ behavior: 'smooth' });
-                }}
+                onClick={() => setActiveCategory(cat.label)}
               >
                 <div className="category-card__image-wrapper">
                   <img 

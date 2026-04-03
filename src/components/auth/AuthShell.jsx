@@ -16,8 +16,9 @@ export default function AuthShell({
 }) {
   return (
     <div className="auth-shell">
-      <video className="auth-shell__video" autoPlay muted loop playsInline>
-        <source src="https://player.vimeo.com/external/371433846.hd.mp4?s=1f6e8f6c8c8e8f6e8f6e8f6e8f6e8f6e8f6e8f6e&profile_id=175" type="video/mp4" />
+      <video className="auth-shell__video" autoPlay muted loop playsInline preload="auto">
+        <source src="https://videos.pexels.com/video-files/5532782/5532782-uhd_2560_1440_25fps.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
       </video>
       <div className="auth-shell__video-fade" />
       <div className="auth-shell__scene">

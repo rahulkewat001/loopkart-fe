@@ -165,8 +165,9 @@ function GuestLanding({ onAuthenticated }) {
 
   return (
     <div className="guest-home">
-      <video className="guest-home__video" autoPlay muted loop playsInline>
-        <source src="https://player.vimeo.com/external/371433846.hd.mp4?s=1f6e8f6c8c8e8f6e8f6e8f6e8f6e8f6e8f6e8f6e&profile_id=175" type="video/mp4" />
+      <video className="guest-home__video" autoPlay muted loop playsInline preload="auto">
+        <source src="https://videos.pexels.com/video-files/6213997/6213997-uhd_2560_1440_25fps.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
       </video>
       <div className="guest-home__overlay" />
 
@@ -458,8 +459,9 @@ export default function HomePage() {
       <Navbar />
 
       <section className="hero-experience" id="hero">
-        <video className="hero-experience__video" autoPlay muted loop playsInline>
-          <source src="https://player.vimeo.com/external/371433846.hd.mp4?s=1f6e8f6c8c8e8f6e8f6e8f6e8f6e8f6e8f6e8f6e&profile_id=175" type="video/mp4" />
+        <video className="hero-experience__video" autoPlay muted loop playsInline preload="auto">
+          <source src="https://videos.pexels.com/video-files/3252805/3252805-uhd_2560_1440_25fps.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
         </video>
         <div className="hero-experience__overlay" />
 

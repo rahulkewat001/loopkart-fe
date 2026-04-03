@@ -36,7 +36,7 @@ export default function Navbar({ onSearch }) {
   const [compareOpen, setCompareOpen] = useState(false);
   const [locationOpen, setLocationOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
-  const [location, setLocation] = useState('Mumbai, 400001');
+  const [location, setLocation] = useState('Mumbai, Maharashtra');
   const [isListening, setIsListening] = useState(false);
   const fileInputRef = useRef(null);
   const dropRef  = useRef(null);
@@ -215,18 +215,64 @@ export default function Navbar({ onSearch }) {
           {locationOpen && (
             <div className="navbar-premium__dropdown navbar-premium__dropdown--location animate-fadeIn">
               <div className="dropdown__header">
-                <p className="dropdown__title"><MapPin size={16} /> Delivery Location</p>
+                <p className="dropdown__title"><MapPin size={16} /> Select Location</p>
               </div>
               <div className="dropdown__list">
-                <div className="location-item">
-                  <p className="location-current">{location}</p>
-                  <button className="location-change" onClick={() => { const newLoc = prompt('Enter your location (City, Pincode):', location); if (newLoc) setLocation(newLoc); setLocationOpen(false); }}>Change</button>
+                <div className="location-search">
+                  <input 
+                    type="text" 
+                    placeholder="Search city or pincode..."
+                    className="location-search__input"
+                  />
                 </div>
-                <div className="dropdown__divider" />
-                <div className="location-popular">
-                  <p className="location-popular__title">Popular Cities</p>
-                  {['Mumbai, 400001', 'Delhi, 110001', 'Bangalore, 560001', 'Hyderabad, 500001', 'Chennai, 600001', 'Kolkata, 700001'].map((city) => (
-                    <button key={city} className="location-popular__item" onClick={() => { setLocation(city); setLocationOpen(false); }}>
+                <div className="location-cities">
+                  {[
+                    'Mumbai, Maharashtra',
+                    'Delhi, NCR',
+                    'Bangalore, Karnataka',
+                    'Hyderabad, Telangana',
+                    'Chennai, Tamil Nadu',
+                    'Kolkata, West Bengal',
+                    'Pune, Maharashtra',
+                    'Ahmedabad, Gujarat',
+                    'Jaipur, Rajasthan',
+                    'Surat, Gujarat',
+                    'Lucknow, Uttar Pradesh',
+                    'Kanpur, Uttar Pradesh',
+                    'Nagpur, Maharashtra',
+                    'Indore, Madhya Pradesh',
+                    'Thane, Maharashtra',
+                    'Bhopal, Madhya Pradesh',
+                    'Visakhapatnam, Andhra Pradesh',
+                    'Patna, Bihar',
+                    'Vadodara, Gujarat',
+                    'Ghaziabad, Uttar Pradesh',
+                    'Ludhiana, Punjab',
+                    'Agra, Uttar Pradesh',
+                    'Nashik, Maharashtra',
+                    'Faridabad, Haryana',
+                    'Meerut, Uttar Pradesh',
+                    'Rajkot, Gujarat',
+                    'Varanasi, Uttar Pradesh',
+                    'Srinagar, Jammu & Kashmir',
+                    'Amritsar, Punjab',
+                    'Allahabad, Uttar Pradesh',
+                    'Ranchi, Jharkhand',
+                    'Howrah, West Bengal',
+                    'Coimbatore, Tamil Nadu',
+                    'Jabalpur, Madhya Pradesh',
+                    'Gwalior, Madhya Pradesh',
+                    'Vijayawada, Andhra Pradesh',
+                    'Jodhpur, Rajasthan',
+                    'Madurai, Tamil Nadu',
+                    'Raipur, Chhattisgarh',
+                    'Kota, Rajasthan',
+                  ].map((city) => (
+                    <button 
+                      key={city} 
+                      className="location-city__item" 
+                      onClick={() => { setLocation(city); setLocationOpen(false); }}
+                    >
                       <MapPin size={14} />
                       {city}
                     </button>

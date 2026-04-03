@@ -16,14 +16,62 @@ import ProductGrid from '../../components/product/ProductGrid';
 import './HomePage.css';
 
 const categories = [
-  { id: 1, Icon: Smartphone,      label: 'Electronics' },
-  { id: 2, Icon: Shirt,           label: 'Fashion' },
-  { id: 3, Icon: Home,            label: 'Home & Living' },
-  { id: 4, Icon: Sparkles,        label: 'Beauty' },
-  { id: 5, Icon: Dumbbell,        label: 'Sports' },
-  { id: 6, Icon: BookOpen,        label: 'Books' },
-  { id: 7, Icon: Baby,            label: 'Toys' },
-  { id: 8, Icon: UtensilsCrossed, label: 'Kitchen' },
+  { 
+    id: 1, 
+    Icon: Smartphone, 
+    label: 'Electronics',
+    image: 'https://images.unsplash.com/photo-1468495244123-6c6c332eeece?w=400&q=80',
+    description: 'Phones, Laptops & More'
+  },
+  { 
+    id: 2, 
+    Icon: Shirt, 
+    label: 'Fashion',
+    image: 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=400&q=80',
+    description: 'Clothing & Accessories'
+  },
+  { 
+    id: 3, 
+    Icon: Home, 
+    label: 'Home & Living',
+    image: 'https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=400&q=80',
+    description: 'Furniture & Decor'
+  },
+  { 
+    id: 4, 
+    Icon: Sparkles, 
+    label: 'Beauty',
+    image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&q=80',
+    description: 'Skincare & Makeup'
+  },
+  { 
+    id: 5, 
+    Icon: Dumbbell, 
+    label: 'Sports',
+    image: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=400&q=80',
+    description: 'Fitness & Equipment'
+  },
+  { 
+    id: 6, 
+    Icon: BookOpen, 
+    label: 'Books',
+    image: 'https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=400&q=80',
+    description: 'Fiction & Non-Fiction'
+  },
+  { 
+    id: 7, 
+    Icon: Baby, 
+    label: 'Toys',
+    image: 'https://images.unsplash.com/photo-1558060370-d644479cb6f7?w=400&q=80',
+    description: 'Kids & Baby Products'
+  },
+  { 
+    id: 8, 
+    Icon: UtensilsCrossed, 
+    label: 'Kitchen',
+    image: 'https://images.unsplash.com/photo-1556911220-bff31c812dba?w=400&q=80',
+    description: 'Cookware & Appliances'
+  },
 ];
 
 const features = [
@@ -146,14 +194,50 @@ export default function HomePage() {
         <div className="container">
           <h2 className="section__title">Shop by Category</h2>
           <div className="categories">
-            <button className={`category-card ${activeCategory === 'All' ? 'category-card--active' : ''}`} onClick={() => setActiveCategory('All')}>
-              <span className="category-card__icon"><ShoppingBag size={24} /></span>
-              <span className="category-card__label">All</span>
+            <button 
+              className={`category-card ${activeCategory === 'All' ? 'category-card--active' : ''}`} 
+              onClick={() => {
+                setActiveCategory('All');
+                document.getElementById('products-section')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
+              <div className="category-card__image-wrapper">
+                <div className="category-card__icon-overlay">
+                  <ShoppingBag size={32} />
+                </div>
+              </div>
+              <div className="category-card__content">
+                <span className="category-card__label">All Products</span>
+                <span className="category-card__desc">Browse Everything</span>
+              </div>
             </button>
             {categories.map((cat) => (
-              <button key={cat.id} className={`category-card ${activeCategory === cat.label ? 'category-card--active' : ''}`} onClick={() => setActiveCategory(cat.label)}>
-                <span className="category-card__icon"><cat.Icon size={24} /></span>
-                <span className="category-card__label">{cat.label}</span>
+              <button 
+                key={cat.id} 
+                className={`category-card ${activeCategory === cat.label ? 'category-card--active' : ''}`} 
+                onClick={() => {
+                  setActiveCategory(cat.label);
+                  document.getElementById('products-section')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
+                <div className="category-card__image-wrapper">
+                  <img 
+                    src={cat.image} 
+                    alt={cat.label}
+                    className="category-card__image"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.parentElement.querySelector('.category-card__icon-overlay').style.display = 'flex';
+                    }}
+                  />
+                  <div className="category-card__icon-overlay" style={{ display: 'none' }}>
+                    <cat.Icon size={32} />
+                  </div>
+                </div>
+                <div className="category-card__content">
+                  <span className="category-card__label">{cat.label}</span>
+                  <span className="category-card__desc">{cat.description}</span>
+                </div>
               </button>
             ))}
           </div>

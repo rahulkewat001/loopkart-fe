@@ -203,6 +203,40 @@ export default function Navbar({ onSearch }) {
           <span className="navbar-premium__sale-badge">SALE</span>
         </Link>
 
+        {/* Location Selector */}
+        <div className="navbar-premium__location" ref={locationRef}>
+          <button className="navbar-premium__location-btn" onClick={() => setLocationOpen((p) => !p)}>
+            <MapPin size={18} />
+            <div className="navbar-premium__location-text">
+              <span className="navbar-premium__location-label">Deliver to</span>
+              <span className="navbar-premium__location-value">{location.split(',')[0]}</span>
+            </div>
+          </button>
+          {locationOpen && (
+            <div className="navbar-premium__dropdown navbar-premium__dropdown--location animate-fadeIn">
+              <div className="dropdown__header">
+                <p className="dropdown__title"><MapPin size={16} /> Delivery Location</p>
+              </div>
+              <div className="dropdown__list">
+                <div className="location-item">
+                  <p className="location-current">{location}</p>
+                  <button className="location-change" onClick={() => { const newLoc = prompt('Enter your location (City, Pincode):', location); if (newLoc) setLocation(newLoc); setLocationOpen(false); }}>Change</button>
+                </div>
+                <div className="dropdown__divider" />
+                <div className="location-popular">
+                  <p className="location-popular__title">Popular Cities</p>
+                  {['Mumbai, 400001', 'Delhi, 110001', 'Bangalore, 560001', 'Hyderabad, 500001', 'Chennai, 600001', 'Kolkata, 700001'].map((city) => (
+                    <button key={city} className="location-popular__item" onClick={() => { setLocation(city); setLocationOpen(false); }}>
+                      <MapPin size={14} />
+                      {city}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Search Bar */}
         <div className={`navbar-premium__search ${searchFocused ? 'navbar-premium__search--focused' : ''}`} ref={searchRef}>
           <form onSubmit={handleSearch}>
@@ -266,26 +300,6 @@ export default function Navbar({ onSearch }) {
 
         {/* Actions */}
         <div className="navbar-premium__actions">
-          {/* Location */}
-          <div className="navbar-premium__dropdown-wrapper" ref={locationRef}>
-            <button className="navbar-premium__icon-btn" data-tooltip={t('deliveryLocation')} onClick={() => setLocationOpen((p) => !p)}>
-              <MapPin size={20} />
-            </button>
-            {locationOpen && (
-              <div className="navbar-premium__dropdown navbar-premium__dropdown--location animate-fadeIn">
-                <div className="dropdown__header">
-                  <p className="dropdown__title"><MapPin size={16} /> {t('deliveryLocation')}</p>
-                </div>
-                <div className="dropdown__list">
-                  <div className="location-item">
-                    <p className="location-current">{location}</p>
-                    <button className="location-change" onClick={() => { const newLoc = prompt('Enter your location:', location); if (newLoc) setLocation(newLoc); setLocationOpen(false); }}>{t('change')}</button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
           {/* Compare */}
           <div className="navbar-premium__dropdown-wrapper" ref={compareRef}>
             <button className="navbar-premium__icon-btn" data-tooltip={t('compareProducts')} onClick={() => setCompareOpen((p) => !p)}>

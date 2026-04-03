@@ -58,6 +58,7 @@
   text-decoration: none;
   position: relative;
   transition: transform 0.3s ease;
+  flex-shrink: 0;
 }
 
 .navbar-premium__logo:hover {
@@ -115,6 +116,89 @@
 @keyframes saleBounce {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-3px); }
+}
+
+/* ─── Location Selector ───────────────────────────────────────── */
+.navbar-premium__location {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.navbar-premium__location-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #f5f0e8;
+}
+
+.navbar-premium__location-btn:hover {
+  background: rgba(212, 175, 55, 0.2);
+  border-color: #d4af37;
+  transform: translateY(-2px);
+}
+
+.navbar-premium__location-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.navbar-premium__location-label {
+  font-size: 10px;
+  color: rgba(245, 240, 232, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.navbar-premium__location-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f4d03f;
+}
+
+.location-popular {
+  padding: 12px 20px;
+}
+
+.location-popular__title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.location-popular__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #333;
+  font-size: 13px;
+  width: 100%;
+  text-align: left;
+}
+
+.location-popular__item:hover {
+  background: #f8f8f8;
+  color: #d4af37;
+}
+
+.location-popular__item svg {
+  color: #d4af37;
 }
 
 /* ─── Search Bar ──────────────────────────────────────────────── */
@@ -938,6 +1022,10 @@
 
 @media (max-width: 768px) {
   .navbar-premium__search {
+    display: none;
+  }
+  
+  .navbar-premium__location {
     display: none;
   }
   

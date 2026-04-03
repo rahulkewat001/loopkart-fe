@@ -9,6 +9,8 @@ import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useNotifications } from '../../context/NotificationContext';
+import { useTheme } from '../../context/ThemeContext';
+import { useLanguage } from '../../context/LanguageContext';
 import './Navbar.css';
 
 
@@ -18,12 +20,12 @@ export default function Navbar({ onSearch }) {
   const { itemCount }            = useCart();
   const { count: wishCount }     = useWishlist();
   const { unread, notifications, markAllRead, markRead, deleteOne } = useNotifications();
+  const { dark, toggleTheme }    = useTheme();
+  const { language, setLanguage, t } = useLanguage();
   const navigate                 = useNavigate();
-  const [search, setSearch]      = useState('');
   const [menuOpen, setMenuOpen]  = useState(false);
   const [dropOpen, setDropOpen]  = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
-  const [dark, setDark]          = useState(() => localStorage.getItem('theme') === 'dark');
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [recentSearches] = useState(['iPhone 14', 'Laptop', 'Headphones']);
@@ -34,7 +36,6 @@ export default function Navbar({ onSearch }) {
   const [locationOpen, setLocationOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const [location, setLocation] = useState('Mumbai, 400001');
-  const [language, setLanguage] = useState('English');
   const dropRef  = useRef(null);
   const notifRef = useRef(null);
   const searchRef = useRef(null);
@@ -42,11 +43,6 @@ export default function Navbar({ onSearch }) {
   const compareRef = useRef(null);
   const locationRef = useRef(null);
   const langRef = useRef(null);
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
-    localStorage.setItem('theme', dark ? 'dark' : 'light');
-  }, [dark]);
 
   useEffect(() => {
     const handler = (e) => {
@@ -141,16 +137,16 @@ export default function Navbar({ onSearch }) {
             <Search className="navbar-premium__search-icon" />
             <input 
               type="text" 
-              placeholder="Search products, brands, categories..." 
+              placeholder={t('search')} 
               value={search} 
               onChange={(e) => setSearch(e.target.value)}
               onFocus={() => { setSearchFocused(true); setShowSuggestions(true); }}
               className="navbar-premium__search-input" 
             />
-            <button type="button" className="navbar-premium__search-btn" title="Voice Search" onClick={handleVoiceSearch}>
+            <button type="button" className="navbar-premium__search-btn" title={t('voiceSearch')} onClick={handleVoiceSearch}>
               <Mic size={18} />
             </button>
-            <button type="button" className="navbar-premium__search-btn" title="Image Search" onClick={handleImageSearch}>
+            <button type="button" className="navbar-premium__search-btn" title={t('imageSearch')} onClick={handleImageSearch}>
               <Camera size={18} />
             </button>
           </form>
@@ -159,7 +155,7 @@ export default function Navbar({ onSearch }) {
             <div className="navbar-premium__search-dropdown animate-fadeIn">
               {recentSearches.length > 0 && (
                 <div className="search-dropdown__section">
-                  <p className="search-dropdown__title">Recent Searches</p>
+                  <p className="search-dropdown__title">{t('recentSearches')}</p>
                   {recentSearches.map((term, i) => (
                     <div key={i} className="search-dropdown__item" onClick={() => { setSearch(term); handleSearch({ preventDefault: () => {} }); }}>
                       <Search size={16} />
@@ -171,7 +167,7 @@ export default function Navbar({ onSearch }) {
               
               {suggestions.length > 0 && (
                 <div className="search-dropdown__section">
-                  <p className="search-dropdown__title">Suggestions</p>
+                  <p className="search-dropdown__title">{t('suggestions')}</p>
                   {suggestions.map((product) => (
                     <div key={product._id} className="search-dropdown__product" onClick={() => handleSuggestionClick(product)}>
                       <div className="search-dropdown__product-img">
@@ -193,18 +189,18 @@ export default function Navbar({ onSearch }) {
         <div className="navbar-premium__actions">
           {/* Location */}
           <div className="navbar-premium__dropdown-wrapper" ref={locationRef}>
-            <button className="navbar-premium__icon-btn" data-tooltip="Delivery Location" onClick={() => setLocationOpen((p) => !p)}>
+            <button className="navbar-premium__icon-btn" data-tooltip={t('deliveryLocation')} onClick={() => setLocationOpen((p) => !p)}>
               <MapPin size={20} />
             </button>
             {locationOpen && (
               <div className="navbar-premium__dropdown navbar-premium__dropdown--location animate-fadeIn">
                 <div className="dropdown__header">
-                  <p className="dropdown__title"><MapPin size={16} /> Delivery Location</p>
+                  <p className="dropdown__title"><MapPin size={16} /> {t('deliveryLocation')}</p>
                 </div>
                 <div className="dropdown__list">
                   <div className="location-item">
                     <p className="location-current">{location}</p>
-                    <button className="location-change" onClick={() => { const newLoc = prompt('Enter your location:', location); if (newLoc) setLocation(newLoc); setLocationOpen(false); }}>Change</button>
+                    <button className="location-change" onClick={() => { const newLoc = prompt('Enter your location:', location); if (newLoc) setLocation(newLoc); setLocationOpen(false); }}>{t('change')}</button>
                   </div>
                 </div>
               </div>
@@ -213,18 +209,18 @@ export default function Navbar({ onSearch }) {
 
           {/* Compare */}
           <div className="navbar-premium__dropdown-wrapper" ref={compareRef}>
-            <button className="navbar-premium__icon-btn" data-tooltip="Compare Products" onClick={() => setCompareOpen((p) => !p)}>
+            <button className="navbar-premium__icon-btn" data-tooltip={t('compareProducts')} onClick={() => setCompareOpen((p) => !p)}>
               <GitCompare size={20} />
             </button>
             {compareOpen && (
               <div className="navbar-premium__dropdown navbar-premium__dropdown--compare animate-fadeIn">
                 <div className="dropdown__header">
-                  <p className="dropdown__title"><GitCompare size={16} /> Compare Products</p>
+                  <p className="dropdown__title"><GitCompare size={16} /> {t('compareProducts')}</p>
                 </div>
                 <div className="dropdown__list">
                   <div className="dropdown__empty">
                     <GitCompare size={32} />
-                    <p>No products to compare</p>
+                    <p>{t('noProductsToCompare')}</p>
                   </div>
                 </div>
               </div>
@@ -232,7 +228,7 @@ export default function Navbar({ onSearch }) {
           </div>
 
           {/* Wishlist */}
-          <Link to="/wishlist" className="navbar-premium__icon-btn navbar-premium__icon-btn--animated" data-tooltip="Wishlist">
+          <Link to="/wishlist" className="navbar-premium__icon-btn navbar-premium__icon-btn--animated" data-tooltip={t('wishlist')}>
             <Heart size={20} />
             {wishCount > 0 && <span className="navbar-premium__badge navbar-premium__badge--pulse">{wishCount}</span>}
           </Link>
@@ -241,7 +237,7 @@ export default function Navbar({ onSearch }) {
           <div className="navbar-premium__dropdown-wrapper" ref={notifRef}>
             <button
               className="navbar-premium__icon-btn navbar-premium__icon-btn--animated"
-              data-tooltip="Notifications"
+              data-tooltip={t('notifications')}
               onClick={() => setNotifOpen((p) => !p)}
             >
               <Bell size={20} />
@@ -251,16 +247,16 @@ export default function Navbar({ onSearch }) {
             {notifOpen && (
               <div className="navbar-premium__dropdown navbar-premium__dropdown--notif animate-fadeIn">
                 <div className="dropdown__header">
-                  <p className="dropdown__title"><Bell size={16} /> Notifications</p>
+                  <p className="dropdown__title"><Bell size={16} /> {t('notifications')}</p>
                   {notifications.some((n) => !n.read) && (
-                    <button className="dropdown__action" onClick={markAllRead}>Mark all read</button>
+                    <button className="dropdown__action" onClick={markAllRead}>{t('markAllRead')}</button>
                   )}
                 </div>
                 <div className="dropdown__list">
                   {notifications.length === 0 ? (
                     <div className="dropdown__empty">
                       <Bell size={32} />
-                      <p>No notifications yet</p>
+                      <p>{t('noNotifications')}</p>
                     </div>
                   ) : (
                     notifications.map((n) => (
@@ -285,7 +281,7 @@ export default function Navbar({ onSearch }) {
           </div>
 
           {/* Messages */}
-          <Link to="/chat" className="navbar-premium__icon-btn navbar-premium__icon-btn--animated" data-tooltip="Messages">
+          <Link to="/chat" className="navbar-premium__icon-btn navbar-premium__icon-btn--animated" data-tooltip={t('messages')}>
             <MessageCircle size={20} />
             <span className="navbar-premium__badge navbar-premium__badge--pulse navbar-premium__badge--orange">3</span>
           </Link>
@@ -294,7 +290,7 @@ export default function Navbar({ onSearch }) {
           <div className="navbar-premium__dropdown-wrapper" ref={cartRef}>
             <button 
               className="navbar-premium__icon-btn navbar-premium__icon-btn--animated navbar-premium__icon-btn--cart" 
-              data-tooltip="Shopping Cart"
+              data-tooltip={t('shoppingCart')}
               onClick={() => setCartOpen((p) => !p)}
             >
               <ShoppingCart size={20} />
@@ -304,22 +300,22 @@ export default function Navbar({ onSearch }) {
             {cartOpen && (
               <div className="navbar-premium__dropdown navbar-premium__dropdown--cart animate-fadeIn">
                 <div className="dropdown__header">
-                  <p className="dropdown__title"><ShoppingCart size={16} /> My Cart</p>
+                  <p className="dropdown__title"><ShoppingCart size={16} /> {t('myCart')}</p>
                 </div>
                 <div className="dropdown__list">
                   {itemCount === 0 ? (
                     <div className="dropdown__empty">
                       <ShoppingCart size={32} />
-                      <p>Your cart is empty</p>
+                      <p>{t('yourCartIsEmpty')}</p>
                     </div>
                   ) : (
                     <>
                       <div className="cart-preview__items">
-                        <p className="cart-preview__count">{itemCount} items in cart</p>
+                        <p className="cart-preview__count">{itemCount} {t('itemsInCart')}</p>
                       </div>
                       <div className="cart-preview__footer">
                         <Link to="/cart" className="cart-preview__btn" onClick={() => setCartOpen(false)}>
-                          View Cart
+                          {t('viewCart')}
                         </Link>
                       </div>
                     </>
@@ -331,16 +327,16 @@ export default function Navbar({ onSearch }) {
 
           {/* Language */}
           <div className="navbar-premium__dropdown-wrapper" ref={langRef}>
-            <button className="navbar-premium__icon-btn" data-tooltip="Language" onClick={() => setLangOpen((p) => !p)}>
+            <button className="navbar-premium__icon-btn" data-tooltip={t('selectLanguage')} onClick={() => setLangOpen((p) => !p)}>
               <Globe size={20} />
             </button>
             {langOpen && (
               <div className="navbar-premium__dropdown navbar-premium__dropdown--lang animate-fadeIn">
                 <div className="dropdown__header">
-                  <p className="dropdown__title"><Globe size={16} /> Select Language</p>
+                  <p className="dropdown__title"><Globe size={16} /> {t('selectLanguage')}</p>
                 </div>
                 <div className="dropdown__list">
-                  {['English', 'हिन्दी', 'मराठी', 'தமிழ்', 'తెలుగు', 'বাংলা'].map((lang) => (
+                  {['English', 'ଓଡ଼ିଆ'].map((lang) => (
                     <button key={lang} className={`dropdown__link ${language === lang ? 'dropdown__link--active' : ''}`} onClick={() => { setLanguage(lang); setLangOpen(false); }}>
                       {lang}
                     </button>
@@ -351,7 +347,7 @@ export default function Navbar({ onSearch }) {
           </div>
 
           {/* Dark Mode */}
-          <button className="navbar-premium__icon-btn" onClick={() => setDark((d) => !d)} data-tooltip={dark ? 'Light Mode' : 'Dark Mode'}>
+          <button className="navbar-premium__icon-btn" onClick={toggleTheme} data-tooltip={dark ? t('lightMode') : t('darkMode')}>
             <Moon size={20} className={dark ? 'moon-active' : ''} />
           </button>
 
@@ -370,15 +366,15 @@ export default function Navbar({ onSearch }) {
                   </div>
                 </div>
                 <div className="dropdown__divider" />
-                <Link to="/profile"  className="dropdown__link" onClick={() => setDropOpen(false)}><User size={16} /> My Profile</Link>
-                <Link to="/orders"   className="dropdown__link" onClick={() => setDropOpen(false)}><Package size={16} /> My Orders</Link>
-                <Link to="/saved-searches" className="dropdown__link" onClick={() => setDropOpen(false)}><Bookmark size={16} /> Saved Searches</Link>
-                <Link to="/wishlist" className="dropdown__link" onClick={() => setDropOpen(false)}><Heart size={16} /> Wishlist {wishCount > 0 && `(${wishCount})`}</Link>
-                {user?.role === 'admin' && <Link to="/admin" className="dropdown__link" onClick={() => setDropOpen(false)}><Settings size={16} /> Admin Panel</Link>}
-                {user?.role === 'seller' && <Link to="/seller/dashboard" className="dropdown__link" onClick={() => setDropOpen(false)}><Store size={16} /> My Shop</Link>}
-                {user?.role === 'user'   && <Link to="/become-seller" className="dropdown__link dropdown__link--highlight" onClick={() => setDropOpen(false)}><Zap size={16} /> Start Selling</Link>}
+                <Link to="/profile"  className="dropdown__link" onClick={() => setDropOpen(false)}><User size={16} /> {t('myProfile')}</Link>
+                <Link to="/orders"   className="dropdown__link" onClick={() => setDropOpen(false)}><Package size={16} /> {t('myOrders')}</Link>
+                <Link to="/saved-searches" className="dropdown__link" onClick={() => setDropOpen(false)}><Bookmark size={16} /> {t('savedSearches')}</Link>
+                <Link to="/wishlist" className="dropdown__link" onClick={() => setDropOpen(false)}><Heart size={16} /> {t('wishlist')} {wishCount > 0 && `(${wishCount})`}</Link>
+                {user?.role === 'admin' && <Link to="/admin" className="dropdown__link" onClick={() => setDropOpen(false)}><Settings size={16} /> {t('adminPanel')}</Link>}
+                {user?.role === 'seller' && <Link to="/seller/dashboard" className="dropdown__link" onClick={() => setDropOpen(false)}><Store size={16} /> {t('myShop')}</Link>}
+                {user?.role === 'user'   && <Link to="/become-seller" className="dropdown__link dropdown__link--highlight" onClick={() => setDropOpen(false)}><Zap size={16} /> {t('startSelling')}</Link>}
                 <div className="dropdown__divider" />
-                <button className="dropdown__link dropdown__link--danger" onClick={handleLogout}><LogOut size={16} /> Logout</button>
+                <button className="dropdown__link dropdown__link--danger" onClick={handleLogout}><LogOut size={16} /> {t('logout')}</button>
               </div>
             )}
           </div>
@@ -396,14 +392,14 @@ export default function Navbar({ onSearch }) {
             <Search size={18} />
             <input type="text" placeholder="Search products..." value={search} onChange={(e) => setSearch(e.target.value)} />
           </form>
-          <Link to="/profile"  className="navbar-premium__mobile-item" onClick={() => setMenuOpen(false)}><User size={18} /> My Profile</Link>
-          <Link to="/orders"   className="navbar-premium__mobile-item" onClick={() => setMenuOpen(false)}><Package size={18} /> My Orders</Link>
-          <Link to="/wishlist" className="navbar-premium__mobile-item" onClick={() => setMenuOpen(false)}><Heart size={18} /> Wishlist</Link>
-          <Link to="/cart"     className="navbar-premium__mobile-item" onClick={() => setMenuOpen(false)}><ShoppingCart size={18} /> Cart {itemCount > 0 && `(${itemCount})`}</Link>
-          {user?.role === 'admin'  && <Link to="/admin"            className="navbar-premium__mobile-item" onClick={() => setMenuOpen(false)}><Settings size={18} /> Admin Panel</Link>}
-          {user?.role === 'seller' && <Link to="/seller/dashboard" className="navbar-premium__mobile-item" onClick={() => setMenuOpen(false)}><Store size={18} /> My Shop</Link>}
-          {user?.role === 'user'   && <Link to="/become-seller"    className="navbar-premium__mobile-item" onClick={() => setMenuOpen(false)}><Zap size={18} /> Start Selling</Link>}
-          <button className="navbar-premium__mobile-item navbar-premium__mobile-item--danger" onClick={handleLogout}><LogOut size={18} /> Logout</button>
+          <Link to="/profile"  className="navbar-premium__mobile-item" onClick={() => setMenuOpen(false)}><User size={18} /> {t('myProfile')}</Link>
+          <Link to="/orders"   className="navbar-premium__mobile-item" onClick={() => setMenuOpen(false)}><Package size={18} /> {t('myOrders')}</Link>
+          <Link to="/wishlist" className="navbar-premium__mobile-item" onClick={() => setMenuOpen(false)}><Heart size={18} /> {t('wishlist')}</Link>
+          <Link to="/cart"     className="navbar-premium__mobile-item" onClick={() => setMenuOpen(false)}><ShoppingCart size={18} /> {t('myCart')} {itemCount > 0 && `(${itemCount})`}</Link>
+          {user?.role === 'admin'  && <Link to="/admin"            className="navbar-premium__mobile-item" onClick={() => setMenuOpen(false)}><Settings size={18} /> {t('adminPanel')}</Link>}
+          {user?.role === 'seller' && <Link to="/seller/dashboard" className="navbar-premium__mobile-item" onClick={() => setMenuOpen(false)}><Store size={18} /> {t('myShop')}</Link>}
+          {user?.role === 'user'   && <Link to="/become-seller"    className="navbar-premium__mobile-item" onClick={() => setMenuOpen(false)}><Zap size={18} /> {t('startSelling')}</Link>}
+          <button className="navbar-premium__mobile-item navbar-premium__mobile-item--danger" onClick={handleLogout}><LogOut size={18} /> {t('logout')}</button>
         </div>
       )}
     </nav>

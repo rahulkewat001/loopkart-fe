@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Smartphone, Shirt, Home, Sparkles, Dumbbell, BookOpen, Baby, UtensilsCrossed,
   ShoppingBag, Truck, RefreshCw, ShieldCheck, Headphones,
-  Search, X, SlidersHorizontal, ShoppingCart, Heart, Star, Zap, Package
+  Search, X, SlidersHorizontal, Package, Zap
 } from 'lucide-react';
 import api from '../../utils/api';
 import { useCart } from '../../context/CartContext';
@@ -12,6 +12,7 @@ import { useToast } from '../../components/ui/Toast/ToastContext';
 import Navbar from '../../components/layout/Navbar';
 import HeroSlider from '../../components/layout/HeroSlider';
 import TrendingProducts from '../../components/product/TrendingProducts';
+import ProductGrid from '../../components/product/ProductGrid';
 import './HomePage.css';
 
 const categories = [
@@ -56,9 +57,7 @@ const SORT_OPTIONS = [
 export default function HomePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { addToCart, items }             = useCart();
-  const { toggleWishlist, isWishlisted } = useWishlist();
-  const { toast }                        = useToast();
+  const { toast } = useToast();
 
   const [products, setProducts]         = useState([]);
   const [filtered, setFiltered]         = useState([]);
@@ -129,8 +128,6 @@ export default function HomePage() {
   };
 
   const hasActiveFilters = searchQuery || sortBy !== 'default' || priceRange[0] > 0 || priceRange[1] < maxPrice || minRating > 0 || activeCategory !== 'All';
-
-  const inCart = (id) => items.some((i) => i._id === id);
 
   return (
     <div className="home">
@@ -258,9 +255,7 @@ export default function HomePage() {
           </div>
 
           {loading ? (
-            <div className="products-loading">
-              {Array.from({ length: 8 }).map((_, i) => <div key={i} className="product-skeleton" />)}
-            </div>
+            <ProductGrid products={[]} loading={true} />
           ) : filtered.length === 0 ? (
             <div className="products-empty animate-fadeUp">
               <Package size={56} style={{ marginBottom: 12, opacity: 0.4 }} />
@@ -268,42 +263,7 @@ export default function HomePage() {
               <button className="filter-reset-btn" style={{ marginTop: 12 }} onClick={resetFilters}>Clear Filters</button>
             </div>
           ) : (
-            <div className="products">
-              {filtered.map((p) => (
-                <div key={p._id} className="product-card" onClick={() => navigate(`/product/${p._id}`)}>
-                  {p.badge && <span className="product-card__badge">{p.badge}</span>}
-                  <button
-                    className={`product-card__wish ${isWishlisted(p._id) ? 'product-card__wish--active' : ''}`}
-                    onClick={(e) => { e.stopPropagation(); toggleWishlist(p); toast(isWishlisted(p._id) ? 'Removed from wishlist' : 'Added to wishlist!', isWishlisted(p._id) ? 'info' : 'success'); }}
-                  ><Heart size={14} fill={isWishlisted(p._id) ? 'currentColor' : 'none'} /></button>
-                  <div className="product-card__img">
-                    {p.image
-                      ? <img src={p.image} alt={p.name} onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
-                      : null
-                    }
-                    <span style={{ display: p.image ? 'none' : 'flex' }}>{p.emoji}</span>
-                  </div>
-                  <div className="product-card__body">
-                    <p className="product-card__name">{p.name}</p>
-                    <div className="product-card__rating">
-                      <Stars rating={p.rating} />
-                      <span className="product-card__reviews">({p.reviews.toLocaleString()})</span>
-                    </div>
-                    <div className="product-card__pricing">
-                      <span className="product-card__price">₹{p.price.toLocaleString()}</span>
-                      <span className="product-card__original">₹{p.originalPrice.toLocaleString()}</span>
-                      <span className="product-card__discount">{disc(p.price, p.originalPrice)}% off</span>
-                    </div>
-                    <button
-                      className={`product-card__btn ${inCart(p._id) ? 'product-card__btn--added' : ''}`}
-                      onClick={(e) => { e.stopPropagation(); addToCart(p); toast(`${p.name.slice(0, 20)}... added to cart! 🛒`); }}
-                    >
-                      {inCart(p._id) ? <><Star size={13} fill="currentColor" /> Added</> : <><ShoppingCart size={13} /> Add to Cart</>}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <ProductGrid products={filtered} loading={false} />
           )}
         </div>
       </section>

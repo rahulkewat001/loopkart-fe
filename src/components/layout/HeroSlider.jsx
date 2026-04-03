@@ -218,7 +218,12 @@ export default function HeroSlider() {
                 <div className="hero-slide__actions">
                   <button 
                     className="hero-btn hero-btn--primary"
-                    onClick={() => navigate('/')}
+                    onClick={() => {
+                      const element = document.getElementById('products-section');
+                      if (element) {
+                        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }
+                    }}
                   >
                     <ShoppingBag size={18} />
                     Shop Now

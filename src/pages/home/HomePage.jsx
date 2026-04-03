@@ -664,7 +664,30 @@ export default function HomePage() {
                   return (
                     <RevealOnScroll key={product._id} as="article" className="market-card" delay={index * 80}>
                       <div className="market-card__media">
-                        <img src={product.image} alt={product.name} />
+                        {product.image ? (
+                          <img 
+                            src={product.image} 
+                            alt={product.name}
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                              e.target.nextSibling.style.display = 'flex';
+                            }}
+                          />
+                        ) : null}
+                        <div 
+                          className="market-card__fallback"
+                          style={{ 
+                            display: product.image ? 'none' : 'flex',
+                            position: 'absolute',
+                            inset: 0,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: 'var(--surface-secondary)',
+                            color: 'var(--text-tertiary)'
+                          }}
+                        >
+                          <PackageCheck size={48} />
+                        </div>
                         <div className="market-card__topline">
                           <span>{product.category}</span>
                           <span>{conditionLabel(product.condition)}</span>

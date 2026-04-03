@@ -68,8 +68,9 @@ export default function CartPage() {
       clearCart();
       setStep('success');
       toast('Order placed successfully! 🎉', 'success');
-    } catch {
-      toast('Order failed. Please try again.', 'error');
+    } catch (err) {
+      console.error('Order placement error:', err);
+      toast(err.response?.data?.message || 'Order failed. Please try again.', 'error');
     } finally { setLoading(false); }
   };
 
@@ -115,7 +116,8 @@ export default function CartPage() {
             clearCart();
             setStep('success');
             toast('Payment successful! 🎉', 'success');
-          } catch {
+          } catch (err) {
+            console.error('Payment verification error:', err);
             toast('Payment verification failed. Contact support.', 'error');
           }
         },
@@ -128,14 +130,17 @@ export default function CartPage() {
       };
 
       const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', () => {
+      rzp.on('payment.failed', (response) => {
+        console.error('Payment failed:', response);
         toast('Payment failed. Please try again.', 'error');
         setLoading(false);
       });
       rzp.open();
     } catch (err) {
+      console.error('Payment initiation error:', err);
       toast(err.response?.data?.message || 'Payment initiation failed', 'error');
-    } finally { setLoading(false); }
+      setLoading(false);
+    }
   };
 
   const handlePay = () => paymentMethod === 'cod' ? placeCODOrder() : placeOnlineOrder();
@@ -243,7 +248,7 @@ export default function CartPage() {
                 {couponMsg && !appliedCode && <p className="cart-coupon__msg">{couponMsg}</p>}
                 <p className="cart-coupon__hint">Try: LOOP40 · SAVE100 · FIRST50</p>
               </div>
-              <Button fullWidth size="lg" onClick={() => setStep('address')}>Proceed to Checkout →</Button>
+              <Button fullWidth size="lg" onClick={() => navigate('/checkout')}>Proceed to Checkout →</Button>
             </div>
           </div>
 

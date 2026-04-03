@@ -117,6 +117,14 @@
 
 .auth-social {
   display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.auth-social > div {
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .auth-social-btn {

@@ -16,6 +16,14 @@ api.interceptors.request.use((config) => {
 // ─── Auto-refresh token on 401 ───────────────────────────────
 let isRefreshing = false;
 let failedQueue = [];
+const AUTH_BYPASS_ROUTES = [
+  '/auth/login',
+  '/auth/register',
+  '/auth/google',
+  '/auth/forgot-password',
+  '/auth/verify-otp',
+  '/auth/reset-password',
+];
 
 const processQueue = (error, token = null) => {
   failedQueue.forEach(({ resolve, reject }) =>
@@ -28,6 +36,12 @@ api.interceptors.response.use(
   (res) => res,
   async (error) => {
     const original = error.config;
+    const requestUrl = original?.url || '';
+    const shouldBypassRefresh = AUTH_BYPASS_ROUTES.some((route) => requestUrl.includes(route));
+
+    if (shouldBypassRefresh) {
+      return Promise.reject(error);
+    }
 
     if (error.response?.status === 401 && !original._retry) {
       if (isRefreshing) {
@@ -44,6 +58,10 @@ api.interceptors.response.use(
 
       try {
         const refreshToken = localStorage.getItem('refreshToken');
+        if (!refreshToken) {
+          return Promise.reject(error);
+        }
+
         const { data } = await axios.post(
           `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/refresh-token`,
           { refreshToken }
@@ -56,7 +74,7 @@ api.interceptors.response.use(
       } catch (err) {
         processQueue(err, null);
         localStorage.clear();
-        window.location.href = '/login';
+        window.location.href = '/?auth=login';
         return Promise.reject(err);
       } finally {
         isRefreshing = false;

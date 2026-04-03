@@ -1,9 +1,15 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 
 const WishlistContext = createContext(null);
 
 export const WishlistProvider = ({ children }) => {
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('loopkart-wishlist') || '[]');
+    } catch {
+      return [];
+    }
+  });
 
   const addToWishlist = useCallback((product) => {
     setItems((prev) => prev.find((i) => i._id === product._id) ? prev : [...prev, product]);
@@ -22,6 +28,10 @@ export const WishlistProvider = ({ children }) => {
         : [...prev, product]
     );
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem('loopkart-wishlist', JSON.stringify(items));
+  }, [items]);
 
   return (
     <WishlistContext.Provider value={{ items, addToWishlist, removeFromWishlist, isWishlisted, toggleWishlist, count: items.length }}>

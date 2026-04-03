@@ -1,26 +1,41 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 const ThemeContext = createContext(null);
+const STORAGE_KEY = 'loopkart-theme';
 
-export const ThemeProvider = ({ children }) => {
-  const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark');
+function getInitialTheme() {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (stored === 'light' || stored === 'dark') return stored;
+
+  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+}
+
+export function ThemeProvider({ children }) {
+  const [theme, setTheme] = useState(getInitialTheme);
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
-    localStorage.setItem('theme', dark ? 'dark' : 'light');
-  }, [dark]);
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem(STORAGE_KEY, theme);
+  }, [theme]);
 
-  const toggleTheme = () => setDark(prev => !prev);
-
-  return (
-    <ThemeContext.Provider value={{ dark, toggleTheme }}>
-      {children}
-    </ThemeContext.Provider>
+  const value = useMemo(
+    () => ({
+      theme,
+      setTheme,
+      toggleTheme: () => setTheme((current) => (current === 'dark' ? 'light' : 'dark')),
+    }),
+    [theme]
   );
-};
 
-export const useTheme = () => {
-  const ctx = useContext(ThemeContext);
-  if (!ctx) throw new Error('useTheme must be used inside ThemeProvider');
-  return ctx;
-};
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+}
+
+export function useTheme() {
+  const context = useContext(ThemeContext);
+
+  if (!context) {
+    throw new Error('useTheme must be used within a ThemeProvider');
+  }
+
+  return context;
+}

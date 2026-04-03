@@ -1,9 +1,15 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 
 const CartContext = createContext(null);
 
 export const CartProvider = ({ children }) => {
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('loopkart-cart') || '[]');
+    } catch {
+      return [];
+    }
+  });
 
   const addToCart = useCallback((product) => {
     setItems((prev) => {
@@ -23,6 +29,10 @@ export const CartProvider = ({ children }) => {
   }, []);
 
   const clearCart = useCallback(() => setItems([]), []);
+
+  useEffect(() => {
+    localStorage.setItem('loopkart-cart', JSON.stringify(items));
+  }, [items]);
 
   const total     = items.reduce((s, i) => s + i.price * i.quantity, 0);
   const itemCount = items.reduce((s, i) => s + i.quantity, 0);

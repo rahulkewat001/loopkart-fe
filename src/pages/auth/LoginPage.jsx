@@ -1,167 +1,158 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { GoogleLogin } from '@react-oauth/google';
-import { jwtDecode } from 'jwt-decode';
+import { ArrowRight, LockKeyhole, Mail, Recycle, ShieldCheck, Sparkles } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
+import AuthShell from '../../components/auth/AuthShell';
+import GoogleAuthButton from '../../components/auth/GoogleAuthButton';
 import './LoginPage.css';
-
-const EmailIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="2" y="4" width="20" height="16" rx="2"/>
-    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-  </svg>
-);
-
-const LockIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-  </svg>
-);
 
 export default function LoginPage() {
   const { saveAuth } = useAuth();
   const navigate = useNavigate();
-
   const [form, setForm] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const validate = () => {
-    const e = {};
-    if (!form.email.trim()) e.email = 'Email is required';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Enter a valid email';
-    if (!form.password) e.password = 'Password is required';
-    else if (form.password.length < 6) e.password = 'Minimum 6 characters';
-    return e;
+    const nextErrors = {};
+
+    if (!form.email.trim()) nextErrors.email = 'Email is required';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) nextErrors.email = 'Enter a valid email address';
+
+    if (!form.password) nextErrors.password = 'Password is required';
+    else if (form.password.length < 6) nextErrors.password = 'Minimum 6 characters';
+
+    return nextErrors;
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-    setErrors((prev) => ({ ...prev, [name]: '' }));
-    setServerError('');
-  };
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const nextErrors = validate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const errs = validate();
-    if (Object.keys(errs).length) { setErrors(errs); return; }
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      return;
+    }
 
     setLoading(true);
+    setServerError('');
+
     try {
       const { data } = await api.post('/auth/login', form);
       saveAuth(data);
       navigate('/');
-    } catch (err) {
-      setServerError(err.response?.data?.message || 'Login failed. Please try again.');
+    } catch (error) {
+      setServerError(error.response?.data?.message || 'Sign in failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleSuccess = async (credentialResponse) => {
-    try {
-      const decoded = jwtDecode(credentialResponse.credential);
-      const { data } = await api.post('/auth/google', {
-        email: decoded.email,
-        name: decoded.name,
-        googleId: decoded.sub,
-        avatar: decoded.picture
-      });
-      saveAuth(data);
-      navigate('/');
-    } catch (err) {
-      setServerError(err.response?.data?.message || 'Google login failed. Please try again.');
-    }
-  };
-
-  const handleGoogleError = () => {
-    setServerError('Google login failed. Please try again.');
-  };
-
   return (
-    <div className="auth-page">
-      <div className="auth-card animate-fadeUp">
-
-        {/* Brand */}
-        <div className="auth-brand">
-          <span className="auth-brand__logo">🛒</span>
-          <span className="auth-brand__name">LoopKart</span>
-        </div>
-
-        <h1 className="auth-title">Welcome back</h1>
-        <p className="auth-subtitle">Sign in to continue shopping</p>
-
-        {/* Server error */}
-        {serverError && (
-          <div className="auth-alert animate-shake">{serverError}</div>
-        )}
-
-        <form onSubmit={handleSubmit} noValidate className="auth-form">
-          <Input
-            label="Email"
-            name="email"
-            type="email"
-            placeholder="you@example.com"
-            value={form.email}
-            onChange={handleChange}
-            error={errors.email}
-            icon={<EmailIcon />}
-            autoComplete="email"
-            required
-          />
-
-          <Input
-            label="Password"
-            name="password"
-            type="password"
-            placeholder="Enter your password"
-            value={form.password}
-            onChange={handleChange}
-            error={errors.password}
-            icon={<LockIcon />}
-            autoComplete="current-password"
-            required
-          />
-
-          <div className="auth-forgot">
-            <Link to="/forgot-password">Forgot password?</Link>
-          </div>
-
-          <Button type="submit" fullWidth loading={loading} size="lg">
-            Sign In
-          </Button>
-        </form>
-
-        {/* Social Login Divider */}
-        <div className="auth-divider">
-          <span>or continue with</span>
-        </div>
-
-        {/* Social Login Buttons */}
-        <div className="auth-social">
-          <GoogleLogin
-            onSuccess={handleGoogleSuccess}
-            onError={handleGoogleError}
-            useOneTap
-            theme="outline"
-            size="large"
-            text="continue_with"
-            shape="rectangular"
-            width="100%"
-          />
-        </div>
-
-        <p className="auth-switch">
-          Don't have an account?{' '}
-          <Link to="/register">Create one</Link>
+    <AuthShell
+      eyebrow="Circular access"
+      title="Sign in beautifully."
+      subtitle="Continue your buying journey, reopen saved finds, and step back into a marketplace that treats reuse like premium commerce."
+      asideTitle="Every product here carries context."
+      asideText="LoopKart is built to make second-hand feel trusted, detailed, and worth exploring. Sign in to unlock the full buyer and seller experience."
+      highlights={[
+        { icon: '♻', title: 'Impact-first discovery', copy: 'See why each product matters before you even open the page.' },
+        { icon: '✦', title: 'Premium resale UX', copy: 'Smooth browsing, richer product stories, and better trust cues by default.' },
+        { icon: '⛨', title: 'Seller transparency', copy: 'Condition, usage, and health score show up early so decisions feel easy.' },
+      ]}
+      stats={[
+        { value: '48', label: 'active city clusters' },
+        { value: '11.4M', label: 'product views this year' },
+        { value: '2M tons', label: 'waste diverted in 2025' },
+      ]}
+      footer={
+        <p className="auth-shell__footer">
+          New to LoopKart? <Link to="/register">Create an account</Link>
         </p>
+      }
+    >
+      <div className="auth-panel__header">
+        <p className="auth-panel__kicker">Welcome back</p>
+        <h2>Sign in to buy or sell with confidence.</h2>
       </div>
-    </div>
+
+      {serverError ? <div className="auth-panel__alert">{serverError}</div> : null}
+
+      <form className="auth-panel__form" onSubmit={handleSubmit}>
+        <Input
+          label="Email"
+          name="email"
+          type="email"
+          placeholder="you@example.com"
+          value={form.email}
+          onChange={(event) => {
+            setForm((current) => ({ ...current, email: event.target.value }));
+            setErrors((current) => ({ ...current, email: '' }));
+            setServerError('');
+          }}
+          icon={<Mail size={18} />}
+          error={errors.email}
+          required
+        />
+
+        <Input
+          label="Password"
+          name="password"
+          type="password"
+          placeholder="Enter your password"
+          value={form.password}
+          onChange={(event) => {
+            setForm((current) => ({ ...current, password: event.target.value }));
+            setErrors((current) => ({ ...current, password: '' }));
+            setServerError('');
+          }}
+          icon={<LockKeyhole size={18} />}
+          error={errors.password}
+          required
+        />
+
+        <div className="auth-panel__meta">
+          <div className="auth-panel__meta-item">
+            <ShieldCheck size={14} />
+            <span>Tokens refresh automatically</span>
+          </div>
+          <Link to="/forgot-password" className="auth-panel__link">
+            Forgot password?
+          </Link>
+        </div>
+
+        <Button type="submit" fullWidth size="lg" loading={loading}>
+          Sign in
+          <ArrowRight size={16} />
+        </Button>
+      </form>
+
+      <div className="auth-panel__divider">
+        <span>or continue with</span>
+      </div>
+
+      <GoogleAuthButton
+        onAuthSuccess={(data) => {
+          saveAuth(data);
+          navigate('/');
+        }}
+        onAuthError={setServerError}
+      />
+
+      <div className="auth-panel__footnotes">
+        <div className="auth-panel__footnote">
+          <Recycle size={14} />
+          <span>Built for trusted recommerce</span>
+        </div>
+        <div className="auth-panel__footnote">
+          <Sparkles size={14} />
+          <span>Premium resale, not a classifieds feed</span>
+        </div>
+      </div>
+    </AuthShell>
   );
 }

@@ -63,6 +63,12 @@ export default function Navbar({ onSearch }) {
         </form>
 
         <div className="navbar__actions">
+          {/* Wishlist */}
+          <Link to="/wishlist" className="navbar__icon-btn" data-tooltip={`Wishlist${wishCount > 0 ? ` (${wishCount})` : ''}`}>
+            <Heart size={20} />
+            {wishCount > 0 && <span className="navbar__badge navbar__badge--wish">{wishCount}</span>}
+          </Link>
+
           {/* Notification Bell */}
           <div className="navbar__notif" ref={notifRef}>
             <button
@@ -110,20 +116,9 @@ export default function Navbar({ onSearch }) {
             )}
           </div>
 
-          {/* Dark mode */}
-          <button className="navbar__icon-btn navbar__dark-btn" onClick={() => setDark((d) => !d)} data-tooltip={dark ? 'Light Mode' : 'Dark Mode'}>
-            {dark ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
-
           {/* Chat */}
           <Link to="/chat" className="navbar__icon-btn" data-tooltip="Messages">
             <MessageCircle size={20} />
-          </Link>
-
-          {/* Wishlist */}
-          <Link to="/wishlist" className="navbar__icon-btn" data-tooltip={`Wishlist${wishCount > 0 ? ` (${wishCount})` : ''}`}>
-            <Heart size={20} />
-            {wishCount > 0 && <span className="navbar__badge navbar__badge--wish">{wishCount}</span>}
           </Link>
 
           {/* Cart */}
@@ -131,6 +126,11 @@ export default function Navbar({ onSearch }) {
             <ShoppingCart size={20} />
             {itemCount > 0 && <span className="navbar__badge">{itemCount}</span>}
           </Link>
+
+          {/* Dark mode */}
+          <button className="navbar__icon-btn navbar__dark-btn" onClick={() => setDark((d) => !d)} data-tooltip={dark ? 'Light Mode' : 'Dark Mode'}>
+            {dark ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
 
           {/* User dropdown */}
           <div className="navbar__user" ref={dropRef}>

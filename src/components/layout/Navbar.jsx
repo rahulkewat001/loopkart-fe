@@ -9,6 +9,7 @@ import {
   MessageSquareText,
   Moon,
   Package,
+  Search,
   ShoppingCart,
   Sparkles,
   Store,
@@ -31,6 +32,8 @@ export default function Navbar({ onBuyClick, onSellClick }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const initials = user?.name
     ? user.name
@@ -110,6 +113,28 @@ export default function Navbar({ onBuyClick, onSellClick }) {
             <Link to="/" className="product-nav__brand">
               <span className="product-nav__brand-text">LoopKart</span>
             </Link>
+
+            {user && (
+              <div className="product-nav__search">
+                <Search size={16} />
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && searchQuery.trim()) {
+                      navigate(`/?search=${encodeURIComponent(searchQuery.trim())}`);
+                    }
+                  }}
+                />
+                {searchQuery && (
+                  <button onClick={() => setSearchQuery('')} aria-label="Clear search">
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="product-nav__right">

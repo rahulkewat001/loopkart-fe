@@ -349,6 +349,7 @@ function GuestLanding({ onAuthenticated }) {
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, saveAuth } = useAuth();
   const { addToCart, items } = useCart();
   const { toggleWishlist, isWishlisted } = useWishlist();
@@ -358,6 +359,14 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    const urlSearch = searchParams.get('search');
+    if (urlSearch) {
+      setSearchQuery(urlSearch);
+      setSelectedCategory(null);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     let cancelled = false;
@@ -406,10 +415,28 @@ export default function HomePage() {
   ).sort((left, right) => right.count - left.count || right.totalViews - left.totalViews);
 
   const normalizedSearch = searchQuery.trim().toLowerCase();
+  
+  // Global search across all products
+  const globalSearchResults = normalizedSearch && !selectedCategory
+    ? products.filter((product) =>
+        [
+          product.name,
+          product.category,
+          product.manufacturer,
+          product.usageSummary,
+          product.sellerName,
+          product.city,
+          product.material,
+        ]
+          .filter(Boolean)
+          .some((value) => value.toLowerCase().includes(normalizedSearch))
+      )
+    : [];
+  
   const categoryProducts = selectedCategory
     ? products.filter((product) => product.category === selectedCategory)
     : [];
-  const filteredCategoryProducts = normalizedSearch
+  const filteredCategoryProducts = normalizedSearch && selectedCategory
     ? categoryProducts.filter((product) =>
         [
           product.name,
@@ -424,8 +451,13 @@ export default function HomePage() {
           .some((value) => value.toLowerCase().includes(normalizedSearch))
       )
     : categoryProducts;
-  const visibleProducts = filteredCategoryProducts.slice(0, 12);
-  const selectedCategoryCount = filteredCategoryProducts.length;
+  
+  const visibleProducts = globalSearchResults.length > 0 
+    ? globalSearchResults.slice(0, 12)
+    : filteredCategoryProducts.slice(0, 12);
+  const selectedCategoryCount = globalSearchResults.length > 0
+    ? globalSearchResults.length
+    : filteredCategoryProducts.length;
 
   const handlePrimaryHero = () => {
     if (user) {
@@ -559,16 +591,20 @@ export default function HomePage() {
         <div className="section-heading section-heading--row">
           <div>
             <p className="section-heading__eyebrow">
-              {selectedCategory ? 'Category view' : 'Browse by category'}
+              {globalSearchResults.length > 0 ? 'Search results' : selectedCategory ? 'Category view' : 'Browse by category'}
             </p>
             <h2>
-              {selectedCategory
+              {globalSearchResults.length > 0
+                ? `Found ${globalSearchResults.length} products matching "${searchQuery}"`
+                : selectedCategory
                 ? `${selectedCategory} finds curated for their next owner.`
                 : 'Choose a category first, then explore the products inside it.'}
             </h2>
           </div>
           <p className="section-heading__support">
-            {selectedCategory
+            {globalSearchResults.length > 0
+              ? 'Showing results from all categories. Click a category to filter further.'
+              : selectedCategory
               ? 'Hover to inspect maker, use history, and health score before opening the full product page.'
               : 'Open any category to reveal the products that belong to it, then jump back whenever you want.'}
           </p>
@@ -585,7 +621,7 @@ export default function HomePage() {
             <PackageCheck size={28} />
             <p>No marketplace items are live yet. Seed or add products to begin the showcase.</p>
           </RevealOnScroll>
-        ) : !selectedCategory ? (
+        ) : !selectedCategory && globalSearchResults.length === 0 ? (
           <div className="category-grid">
             {categorySummaries.map((category, index) => {
               const CategoryIcon = categoryIcons[category.name] || PackageCheck;
@@ -617,45 +653,62 @@ export default function HomePage() {
               );
             })}
           </div>
-        ) : (
+        ) : globalSearchResults.length > 0 || selectedCategory ? (
           <>
-            <div className="category-toolbar">
-              <button className="category-toolbar__back" onClick={() => {
-                setSelectedCategory(null);
-                setSearchQuery('');
-              }}>
-                <ArrowLeft size={16} />
-                Back to categories
-              </button>
-              <div className="market-search market-search--inline">
-                <div className="market-search__field">
-                  <Search size={18} />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(event) => setSearchQuery(event.target.value)}
-                    placeholder="Search in this category"
-                  />
-                  {searchQuery ? (
-                    <button type="button" className="market-search__clear" onClick={() => setSearchQuery('')}>
-                      <X size={16} />
-                    </button>
-                  ) : null}
+            {selectedCategory && (
+              <div className="category-toolbar">
+                <button className="category-toolbar__back" onClick={() => {
+                  setSelectedCategory(null);
+                  setSearchQuery('');
+                }}>
+                  <ArrowLeft size={16} />
+                  Back to categories
+                </button>
+                <div className="market-search market-search--inline">
+                  <div className="market-search__field">
+                    <Search size={18} />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(event) => setSearchQuery(event.target.value)}
+                      placeholder="Search in this category"
+                    />
+                    {searchQuery ? (
+                      <button type="button" className="market-search__clear" onClick={() => setSearchQuery('')}>
+                        <X size={16} />
+                      </button>
+                    ) : null}
+                  </div>
                 </div>
+                <p className="category-toolbar__meta">
+                  {normalizedSearch
+                    ? `Showing ${visibleProducts.length} of ${selectedCategoryCount} matching products`
+                    : `Showing ${visibleProducts.length} of ${selectedCategoryCount} products`}
+                </p>
               </div>
-              <p className="category-toolbar__meta">
-                {normalizedSearch
-                  ? `Showing ${visibleProducts.length} of ${selectedCategoryCount} matching products`
-                  : `Showing ${visibleProducts.length} of ${selectedCategoryCount} products`}
-              </p>
-            </div>
+            )}
 
-            {filteredCategoryProducts.length === 0 ? (
+            {globalSearchResults.length > 0 && (
+              <div className="category-toolbar">
+                <button className="category-toolbar__back" onClick={() => {
+                  setSearchQuery('');
+                  navigate('/');
+                }}>
+                  <X size={16} />
+                  Clear search
+                </button>
+                <p className="category-toolbar__meta">
+                  Showing {visibleProducts.length} of {selectedCategoryCount} results
+                </p>
+              </div>
+            )}
+
+            {(globalSearchResults.length > 0 || filteredCategoryProducts.length === 0) && visibleProducts.length === 0 ? (
               <RevealOnScroll className="trending-empty card card--glass" delay={120}>
                 <PackageCheck size={28} />
-                <p>No products matched your search in this category yet.</p>
+                <p>{globalSearchResults.length === 0 && normalizedSearch ? `No products found for "${searchQuery}"` : 'No products matched your search in this category yet.'}</p>
               </RevealOnScroll>
-            ) : (
+            ) : visibleProducts.length > 0 ? (
               <div className="trending-grid">
                 {visibleProducts.map((product, index) => {
                   const discountedBy = Math.max(1, Math.round((1 - product.price / product.originalPrice) * 100));
@@ -751,9 +804,9 @@ export default function HomePage() {
                   );
                 })}
               </div>
-            )}
+            ) : null}
           </>
-        )}
+        ) : null}
       </RevealOnScroll>
 
       <RevealOnScroll as="section" className="closing-cta container">

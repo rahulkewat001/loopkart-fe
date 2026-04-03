@@ -365,6 +365,10 @@ export default function HomePage() {
     if (urlSearch) {
       setSearchQuery(urlSearch);
       setSelectedCategory(null);
+      // Auto-scroll to results
+      setTimeout(() => {
+        document.getElementById('trending')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
     }
   }, [searchParams]);
 

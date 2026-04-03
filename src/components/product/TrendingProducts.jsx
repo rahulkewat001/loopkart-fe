@@ -1,169 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, ShoppingCart, Star, TrendingUp } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useToast } from '../ui/Toast/ToastContext';
+import api from '../../utils/api';
 import './TrendingProducts.css';
-
-const trendingProducts = [
-  {
-    _id: 'trend-1',
-    name: 'iPhone 14 Pro Max',
-    category: 'Electronics',
-    image: 'https://images.unsplash.com/photo-1678652197950-91e3f0a0f0a8?w=400&q=80',
-    emoji: '📱',
-    price: 11999,
-    originalPrice: 15999,
-    rating: 4.8,
-    reviews: 2847,
-    badge: 'Best Seller',
-    stock: 45
-  },
-  {
-    _id: 'trend-2',
-    name: 'Premium Cotton T-Shirt',
-    category: 'Fashion',
-    image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&q=80',
-    emoji: '👕',
-    price: 399,
-    originalPrice: 999,
-    rating: 4.5,
-    reviews: 1523,
-    badge: 'Sale',
-    stock: 120
-  },
-  {
-    _id: 'trend-3',
-    name: 'Vitamin C Face Serum',
-    category: 'Beauty',
-    image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400&q=80',
-    emoji: '✨',
-    price: 899,
-    originalPrice: 1499,
-    rating: 4.7,
-    reviews: 892,
-    badge: 'Top Rated',
-    stock: 67
-  },
-  {
-    _id: 'trend-4',
-    name: 'Nike Air Max Sneakers',
-    category: 'Fashion',
-    image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80',
-    emoji: '👟',
-    price: 1799,
-    originalPrice: 2999,
-    rating: 4.6,
-    reviews: 1245,
-    badge: 'Sale',
-    stock: 34
-  },
-  {
-    _id: 'trend-5',
-    name: 'MacBook Pro 14" M2',
-    category: 'Electronics',
-    image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400&q=80',
-    emoji: '💻',
-    price: 89999,
-    originalPrice: 119999,
-    rating: 4.9,
-    reviews: 567,
-    badge: 'Best Seller',
-    stock: 12
-  },
-  {
-    _id: 'trend-6',
-    name: 'Atomic Habits Book',
-    category: 'Books',
-    image: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&q=80',
-    emoji: '📚',
-    price: 599,
-    originalPrice: 999,
-    rating: 4.8,
-    reviews: 3421,
-    badge: 'Top Rated',
-    stock: 89
-  },
-  {
-    _id: 'trend-7',
-    name: 'Sony WH-1000XM5 Headphones',
-    category: 'Electronics',
-    image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&q=80',
-    emoji: '🎧',
-    price: 24999,
-    originalPrice: 29999,
-    rating: 4.7,
-    reviews: 1876,
-    badge: 'Best Seller',
-    stock: 23
-  },
-  {
-    _id: 'trend-8',
-    name: 'Leather Wallet',
-    category: 'Accessories',
-    image: 'https://images.unsplash.com/photo-1627123424574-724758594e93?w=400&q=80',
-    emoji: '👛',
-    price: 799,
-    originalPrice: 1499,
-    rating: 4.4,
-    reviews: 654,
-    badge: 'Sale',
-    stock: 156
-  },
-  {
-    _id: 'trend-9',
-    name: 'Slim Fit Denim Jeans',
-    category: 'Fashion',
-    image: 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&q=80',
-    emoji: '👖',
-    price: 1299,
-    originalPrice: 2499,
-    rating: 4.3,
-    reviews: 987,
-    badge: 'Sale',
-    stock: 78
-  },
-  {
-    _id: 'trend-10',
-    name: 'Hydrating Face Wash',
-    category: 'Beauty',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=400&q=80',
-    emoji: '🧴',
-    price: 349,
-    originalPrice: 599,
-    rating: 4.6,
-    reviews: 1234,
-    badge: 'Top Rated',
-    stock: 234
-  },
-  {
-    _id: 'trend-11',
-    name: 'Smart Watch Series 8',
-    category: 'Electronics',
-    image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&q=80',
-    emoji: '⌚',
-    price: 3999,
-    originalPrice: 5999,
-    rating: 4.5,
-    reviews: 2341,
-    badge: 'Best Seller',
-    stock: 45
-  },
-  {
-    _id: 'trend-12',
-    name: 'Ceramic Coffee Mug Set',
-    category: 'Home & Living',
-    image: 'https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=400&q=80',
-    emoji: '☕',
-    price: 599,
-    originalPrice: 999,
-    rating: 4.7,
-    reviews: 456,
-    badge: 'Sale',
-    stock: 167
-  }
-];
 
 const Stars = ({ rating }) => {
   const full = Math.floor(rating);
@@ -188,6 +30,36 @@ export default function TrendingProducts() {
   const { toggleWishlist, isWishlisted } = useWishlist();
   const { toast } = useToast();
   const [hoveredCard, setHoveredCard] = useState(null);
+  const [trendingProducts, setTrendingProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.get('/products?limit=12&sort=rating').then(({ data }) => {
+      setTrendingProducts(data.products || []);
+    }).catch(() => {
+      setTrendingProducts([]);
+    }).finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <section className="trending-section">
+        <div className="container">
+          <div className="trending-header">
+            <div className="trending-header__left">
+              <div className="trending-header__icon"><TrendingUp size={28} /></div>
+              <div>
+                <h2 className="trending-header__title">Trending Products</h2>
+                <p className="trending-header__subtitle">Loading...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (trendingProducts.length === 0) return null;
 
   const discount = (price, original) => Math.round((1 - price / original) * 100);
   const inCart = (id) => items.some((i) => i._id === id);

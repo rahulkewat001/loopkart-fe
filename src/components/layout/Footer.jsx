@@ -103,7 +103,7 @@ export default function Footer() {
         <div className="footer-bottom">
           <div className="footer-bottom-content">
             <p className="footer-copyright">
-              © {currentYear} LoopKart. All rights reserved.
+              © 2026 LoopKart. All rights reserved.
             </p>
             <div className="footer-payment">
               <span>We Accept:</span>

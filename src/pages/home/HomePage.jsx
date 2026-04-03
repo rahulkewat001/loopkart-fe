@@ -374,17 +374,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* ── Footer ───────────────────────────────────────────── */}
-      <footer className="footer">
-        <div className="container footer__inner">
-          <div className="footer__brand">
-            <ShoppingCart size={20} />
-            <span className="footer__brand-name">LoopKart</span>
-          </div>
-          <p className="footer__copy">© 2025 LoopKart. All rights reserved.</p>
-        </div>
-      </footer>
     </div>
   );
 }

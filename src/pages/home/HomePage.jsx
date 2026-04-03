@@ -580,7 +580,7 @@ export default function HomePage() {
                   }}
                 >
                   <div className="category-card__icon-wrapper">
-                    <CategoryIcon size={48} className="category-card__icon" />
+                    <CategoryIcon size={64} className="category-card__icon" />
                   </div>
                   <div className="category-card__overlay" />
                   <div className="category-card__content">

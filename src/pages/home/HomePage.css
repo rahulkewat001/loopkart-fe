@@ -968,13 +968,15 @@
 
 .category-card {
   position: relative;
-  min-height: 280px;
+  min-height: 320px;
   overflow: hidden;
   border-radius: 30px;
   border: 1px solid rgba(241, 211, 170, 0.12);
   background: rgba(42, 28, 20, 0.72);
   text-align: left;
   transition: transform var(--transition-slow), border-color var(--transition), box-shadow var(--transition-slow);
+  display: flex;
+  flex-direction: column;
 }
 
 [data-theme="light"] .category-card {
@@ -1008,15 +1010,18 @@
 }
 
 .category-card__overlay {
+  position: absolute;
+  inset: 0;
   background:
-    linear-gradient(180deg, rgba(18, 13, 10, 0.08), rgba(18, 13, 10, 0.82) 80%),
-    linear-gradient(90deg, rgba(18, 13, 10, 0.54), rgba(18, 13, 10, 0.18));
+    linear-gradient(180deg, rgba(18, 13, 10, 0.02), rgba(18, 13, 10, 0.75) 70%),
+    linear-gradient(90deg, rgba(18, 13, 10, 0.4), rgba(18, 13, 10, 0.1));
+  pointer-events: none;
 }
 
 [data-theme="light"] .category-card__overlay {
   background:
-    linear-gradient(180deg, rgba(246, 241, 232, 0.04), rgba(246, 241, 232, 0.7) 80%),
-    linear-gradient(90deg, rgba(246, 241, 232, 0.42), rgba(246, 241, 232, 0.08));
+    linear-gradient(180deg, rgba(246, 241, 232, 0.02), rgba(246, 241, 232, 0.65) 70%),
+    linear-gradient(90deg, rgba(246, 241, 232, 0.3), rgba(246, 241, 232, 0.05));
 }
 
 .category-card__content,
@@ -1026,19 +1031,27 @@
 }
 
 .category-card__content {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  min-height: 280px;
-  padding: 28px 28px 76px;
+  flex: 1;
+  padding: 24px 24px 76px;
+  background: linear-gradient(180deg, transparent, rgba(18, 13, 10, 0.4));
+}
+
+[data-theme="light"] .category-card__content {
+  background: linear-gradient(180deg, transparent, rgba(246, 241, 232, 0.3));
 }
 
 .category-card__eyebrow {
-  margin-bottom: 10px;
-  color: rgba(246, 219, 180, 0.84);
+  margin-bottom: 8px;
+  color: rgba(246, 219, 180, 0.9);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-size: 11px;
+  letter-spacing: 0.12em;
+  font-size: 10px;
+  font-weight: 700;
 }
 
 [data-theme="light"] .category-card__eyebrow {
@@ -1047,21 +1060,23 @@
 
 .category-card h3 {
   font-family: var(--font-display);
-  font-size: 34px;
+  font-size: 32px;
   line-height: 0.95;
-  letter-spacing: -0.05em;
-  margin-bottom: 8px;
+  letter-spacing: -0.04em;
+  margin-bottom: 10px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .category-card p {
-  color: rgba(240, 222, 197, 0.76);
+  color: rgba(240, 222, 197, 0.85);
   line-height: 1.6;
   max-width: 90%;
   padding-right: 8px;
+  font-size: 13px;
 }
 
 [data-theme="light"] .category-card p {
-  color: rgba(76, 53, 36, 0.76);
+  color: rgba(76, 53, 36, 0.85);
 }
 
 .category-card__action {
@@ -1598,33 +1613,39 @@
 
 /* ── Enhanced Category Cards with Icons ──────────────────────── */
 .category-card__icon-wrapper {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  height: 180px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, rgba(214, 177, 116, 0.15), rgba(198, 149, 92, 0.08));
+  background: linear-gradient(135deg, rgba(214, 177, 116, 0.18), rgba(198, 149, 92, 0.12));
   backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(241, 211, 170, 0.15);
 }
 
 [data-theme="light"] .category-card__icon-wrapper {
-  background: linear-gradient(135deg, rgba(214, 177, 116, 0.12), rgba(198, 149, 92, 0.06));
+  background: linear-gradient(135deg, rgba(214, 177, 116, 0.15), rgba(198, 149, 92, 0.08));
+  border-bottom-color: rgba(155, 107, 46, 0.15);
 }
 
 .category-card__icon {
-  color: rgba(246, 219, 180, 0.92);
-  transition: transform 0.4s ease, color 0.3s ease;
+  color: rgba(246, 219, 180, 0.95);
+  filter: drop-shadow(0 4px 12px rgba(214, 177, 116, 0.3));
+  transition: transform 0.4s ease, color 0.3s ease, filter 0.3s ease;
 }
 
 [data-theme="light"] .category-card__icon {
   color: #9b6b2e;
+  filter: drop-shadow(0 4px 12px rgba(155, 107, 46, 0.2));
 }
 
 .category-card:hover .category-card__icon {
-  transform: scale(1.15) rotate(5deg);
+  transform: scale(1.2) rotate(8deg);
   color: rgba(246, 219, 180, 1);
+  filter: drop-shadow(0 8px 20px rgba(214, 177, 116, 0.5));
 }
 
 [data-theme="light"] .category-card:hover .category-card__icon {
   color: #8a5f35;
+  filter: drop-shadow(0 8px 20px rgba(155, 107, 46, 0.4));
 }

@@ -16,7 +16,9 @@ export default function AuthShell({
 }) {
   return (
     <div className="auth-shell">
-      <div className="auth-shell__animated-bg" />
+      <video className="auth-shell__video" autoPlay muted loop playsInline>
+        <source src="https://player.vimeo.com/external/371433846.hd.mp4?s=1f6e8f6c8c8e8f6e8f6e8f6e8f6e8f6e8f6e8f6e&profile_id=175" type="video/mp4" />
+      </video>
       <div className="auth-shell__video-fade" />
       <div className="auth-shell__scene">
         <Suspense fallback={null}>

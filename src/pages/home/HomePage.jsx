@@ -140,7 +140,9 @@ export default function HomePage() {
       <HeroSlider />
 
       {/* ── Trending Products ────────────────────────────────── */}
-      <TrendingProducts />
+      <div id="trending-section">
+        <TrendingProducts />
+      </div>
 
       {/* ── Categories ───────────────────────────────────────── */}
       <section className="section">
@@ -307,7 +309,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Banner ───────────────────────────────────────────── */}
-      <section className="banner">
+      <section className="banner" id="banner-section">
         <div className="container banner__inner">
           <div className="banner__content">
             <span className="banner__tag">Limited Time Offer</span>

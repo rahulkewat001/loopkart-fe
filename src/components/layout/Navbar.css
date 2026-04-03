@@ -198,6 +198,17 @@
   transform: scale(1.1);
 }
 
+.navbar-premium__search-btn--active {
+  background: #ff4757;
+  color: #fff;
+  animation: micPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes micPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7); }
+  50% { box-shadow: 0 0 0 8px rgba(255, 71, 87, 0); }
+}
+
 /* ─── Search Dropdown ─────────────────────────────────────────── */
 .navbar-premium__search-dropdown {
   position: absolute;

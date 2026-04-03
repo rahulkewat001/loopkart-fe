@@ -37,6 +37,8 @@ export default function Navbar({ onSearch }) {
   const [locationOpen, setLocationOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const [location, setLocation] = useState('Mumbai, 400001');
+  const [isListening, setIsListening] = useState(false);
+  const fileInputRef = useRef(null);
   const dropRef  = useRef(null);
   const notifRef = useRef(null);
   const searchRef = useRef(null);
@@ -99,22 +101,91 @@ export default function Navbar({ onSearch }) {
   };
 
   const handleVoiceSearch = () => {
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'en-US';
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        setSearch(transcript);
-      };
+    if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+      alert('Voice search is not supported in your browser. Please use Chrome, Edge, or Safari.');
+      return;
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    
+    recognition.lang = language === 'ଓଡ଼ିଆ' ? 'or-IN' : 'en-US';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      console.log('Voice recognition started. Speak now...');
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      console.log('Voice input:', transcript);
+      setSearch(transcript);
+      setIsListening(false);
+      
+      // Auto-submit search after voice input
+      setTimeout(() => {
+        if (onSearch) { onSearch(transcript.trim()); }
+        else { navigate(`/?search=${transcript.trim()}`); }
+      }, 500);
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Voice recognition error:', event.error);
+      setIsListening(false);
+      
+      if (event.error === 'no-speech') {
+        alert('No speech detected. Please try again.');
+      } else if (event.error === 'not-allowed') {
+        alert('Microphone access denied. Please allow microphone access in your browser settings.');
+      } else {
+        alert(`Voice search error: ${event.error}`);
+      }
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+      console.log('Voice recognition ended.');
+    };
+
+    try {
       recognition.start();
-    } else {
-      alert('Voice search not supported in your browser');
+    } catch (error) {
+      console.error('Failed to start voice recognition:', error);
+      setIsListening(false);
+      alert('Failed to start voice search. Please try again.');
     }
   };
 
   const handleImageSearch = () => {
-    alert('Image search feature coming soon!');
+    fileInputRef.current?.click();
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload a valid image file (JPG, PNG, etc.)');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image size should be less than 5MB');
+      return;
+    }
+
+    console.log('Image uploaded:', file.name);
+    
+    // For now, show a message that the feature is being processed
+    // In production, you would upload to a vision API (Google Vision, AWS Rekognition, etc.)
+    alert(`Image search is processing "${file.name}". This feature uses AI to identify products in images. Full implementation coming soon!`);
+    
+    // Reset file input
+    e.target.value = '';
   };
   const handleLogout = async () => { await logout(); navigate('/login'); };
   const initials = user?.name ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) : '?';
@@ -144,12 +215,19 @@ export default function Navbar({ onSearch }) {
               onFocus={() => { setSearchFocused(true); setShowSuggestions(true); }}
               className="navbar-premium__search-input" 
             />
-            <button type="button" className="navbar-premium__search-btn" title={t('voiceSearch')} onClick={handleVoiceSearch}>
+            <button type="button" className={`navbar-premium__search-btn ${isListening ? 'navbar-premium__search-btn--active' : ''}`} title={t('voiceSearch')} onClick={handleVoiceSearch}>
               <Mic size={18} />
             </button>
             <button type="button" className="navbar-premium__search-btn" title={t('imageSearch')} onClick={handleImageSearch}>
               <Camera size={18} />
             </button>
+            <input 
+              ref={fileInputRef}
+              type="file" 
+              accept="image/*" 
+              style={{ display: 'none' }}
+              onChange={handleImageUpload}
+            />
           </form>
           
           {showSuggestions && (

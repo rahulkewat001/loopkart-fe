@@ -98,6 +98,31 @@ export default function HeroSlider() {
   const [touchEnd, setTouchEnd] = useState(0);
   const sliderRef = useRef(null);
 
+  // Scroll to section based on badge type
+  const scrollToSection = (badge) => {
+    let sectionId = '';
+    
+    switch(badge) {
+      case 'New Arrivals Every Day':
+      case 'Fresh Collection':
+        sectionId = 'trending-section';
+        break;
+      case 'Limited Time Offer':
+        sectionId = 'banner-section';
+        break;
+      case 'Hot Right Now':
+        sectionId = 'products-section';
+        break;
+      default:
+        sectionId = 'products-section';
+    }
+    
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   // Auto-slide every 5 seconds
   useEffect(() => {
     if (isPaused) return;
@@ -173,10 +198,14 @@ export default function HeroSlider() {
             >
               {/* Left Content */}
               <div className="hero-slide__content">
-                <div className="hero-slide__badge">
+                <button 
+                  className="hero-slide__badge"
+                  onClick={() => scrollToSection(slideItem.badge)}
+                  title={`Go to ${slideItem.badge} section`}
+                >
                   <slideItem.icon size={14} />
                   <span>{slideItem.badge}</span>
-                </div>
+                </button>
 
                 <h1 className="hero-slide__title">
                   {slideItem.title}

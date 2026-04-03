@@ -143,6 +143,20 @@
   width: fit-content;
   backdrop-filter: blur(10px);
   box-shadow: 0 2px 8px rgba(139,111,71,0.1);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: var(--font-body);
+}
+
+.hero-slide__badge:hover {
+  background: rgba(139,111,71,0.2);
+  border-color: rgba(139,111,71,0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(139,111,71,0.2);
+}
+
+.hero-slide__badge:active {
+  transform: translateY(0);
 }
 
 .hero-slide__title {

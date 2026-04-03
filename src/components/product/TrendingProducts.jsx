@@ -35,8 +35,10 @@ export default function TrendingProducts() {
 
   useEffect(() => {
     api.get('/products?limit=12&sort=rating').then(({ data }) => {
+      console.log('Trending products fetched:', data.products?.length);
       setTrendingProducts(data.products || []);
-    }).catch(() => {
+    }).catch((err) => {
+      console.error('Error fetching trending products:', err);
       setTrendingProducts([]);
     }).finally(() => setLoading(false));
   }, []);
@@ -59,7 +61,23 @@ export default function TrendingProducts() {
     );
   }
 
-  if (trendingProducts.length === 0) return null;
+  if (trendingProducts.length === 0 && !loading) {
+    return (
+      <section className="trending-section">
+        <div className="container">
+          <div className="trending-header">
+            <div className="trending-header__left">
+              <div className="trending-header__icon"><TrendingUp size={28} /></div>
+              <div>
+                <h2 className="trending-header__title">Trending Products</h2>
+                <p className="trending-header__subtitle">No products available</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   const discount = (price, original) => Math.round((1 - price / original) * 100);
   const inCart = (id) => items.some((i) => i._id === id);

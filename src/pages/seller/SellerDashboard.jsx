@@ -32,6 +32,8 @@ export default function SellerDashboard() {
   const [editItem, setEditItem] = useState(null);
   const [form, setForm]         = useState(emptyForm);
   const [saving, setSaving]     = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
   const [shopForm, setShopForm] = useState({
     shopName: user?.sellerProfile?.shopName || '',
     shopDesc: user?.sellerProfile?.shopDesc || '',
@@ -68,10 +70,43 @@ export default function SellerDashboard() {
         setListings((prev) => [data.product, ...prev]);
         toast('Product listed successfully! 🎉', 'success');
       }
-      setShowForm(false); setEditItem(null); setForm(emptyForm);
+      setShowForm(false); setEditItem(null); setForm(emptyForm); setImagePreview(null);
     } catch (err) {
       toast(err.response?.data?.message || 'Failed to save', 'error');
     } finally { setSaving(false); }
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    if (!file.type.startsWith('image/')) {
+      toast('Please upload an image file', 'error');
+      return;
+    }
+    
+    if (file.size > 5 * 1024 * 1024) {
+      toast('Image size should be less than 5MB', 'error');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      
+      const { data } = await api.post('/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      setForm(p => ({ ...p, image: data.url }));
+      setImagePreview(data.url);
+      toast('Image uploaded successfully!', 'success');
+    } catch (err) {
+      toast('Failed to upload image', 'error');
+    } finally {
+      setUploading(false);
+    }
   };
 
   const deleteListing = async (id) => {
@@ -93,7 +128,8 @@ export default function SellerDashboard() {
 
   const openEdit = (p) => {
     setEditItem(p);
-    setForm({ name: p.name, emoji: p.emoji, price: p.price, originalPrice: p.originalPrice, category: p.category, description: p.description, stock: p.stock, condition: p.condition, badge: p.badge || '' });
+    setForm({ name: p.name, emoji: p.emoji, image: p.image || '', price: p.price, originalPrice: p.originalPrice, category: p.category, description: p.description, stock: p.stock, condition: p.condition, badge: p.badge || '' });
+    setImagePreview(p.image || null);
     setShowForm(true); setTab('listings');
   };
 
@@ -196,6 +232,52 @@ export default function SellerDashboard() {
                       <h3>{editItem ? '✏️ Edit Listing' : '➕ Add New Listing'}</h3>
                       <form onSubmit={handleSubmit} className="seller-listing-form">
                         <div className="seller-listing-form__grid">
+                          {/* Image Upload */}
+                          <div className="slg-field slg-field--full">
+                            <label className="slg-label">Product Photo *</label>
+                            <div className="image-upload-area">
+                              {imagePreview ? (
+                                <div className="image-preview">
+                                  <img src={imagePreview} alt="Preview" />
+                                  <button 
+                                    type="button" 
+                                    className="image-remove"
+                                    onClick={() => {
+                                      setImagePreview(null);
+                                      setForm(p => ({ ...p, image: '' }));
+                                    }}
+                                  >
+                                    ✕ Remove
+                                  </button>
+                                </div>
+                              ) : (
+                                <label className="image-upload-label">
+                                  <input 
+                                    type="file" 
+                                    accept="image/*" 
+                                    onChange={handleImageUpload}
+                                    disabled={uploading}
+                                    style={{ display: 'none' }}
+                                  />
+                                  <div className="image-upload-content">
+                                    {uploading ? (
+                                      <>
+                                        <div className="upload-spinner"></div>
+                                        <p>Uploading...</p>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <span className="upload-icon">📷</span>
+                                        <p><strong>Click to upload</strong> or drag and drop</p>
+                                        <small>PNG, JPG up to 5MB</small>
+                                      </>
+                                    )}
+                                  </div>
+                                </label>
+                              )}
+                            </div>
+                          </div>
+
                           <div className="slg-field slg-field--full">
                             <Input label="Product Name *" name="name" placeholder="e.g. iPhone 12 Pro Max 256GB" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} required />
                           </div>
@@ -256,7 +338,13 @@ export default function SellerDashboard() {
                     <div className="seller-listings-grid">
                       {listings.map((p) => (
                         <div key={p._id} className={`seller-listing-card ${p.status === 'sold' ? 'seller-listing-card--sold' : ''}`}>
-                          <div className="seller-listing-card__img">{p.emoji}</div>
+                          <div className="seller-listing-card__img">
+                            {p.image ? (
+                              <img src={p.image} alt={p.name} />
+                            ) : (
+                              <span style={{ fontSize: 52 }}>{p.emoji}</span>
+                            )}
+                          </div>
                           <div className="seller-listing-card__body">
                             <div className="seller-listing-card__top">
                               <p className="seller-listing-card__name">{p.name}</p>

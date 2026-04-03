@@ -498,7 +498,22 @@ export default function HomePage() {
             {featured ? (
               <button className="hero-experience__feature-card" onClick={() => navigate(`/product/${featured._id}`)}>
                 <div className="hero-experience__feature-media">
-                  <img src={featured.image} alt={featured.name} />
+                  {featured.image ? (
+                    <img 
+                      src={featured.image} 
+                      alt={featured.name}
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div 
+                    className="hero-experience__feature-fallback"
+                    style={{ display: featured.image ? 'none' : 'flex' }}
+                  >
+                    <PackageCheck size={48} />
+                  </div>
                 </div>
                 <div className="hero-experience__feature-body">
                   <p className="hero-experience__feature-kicker">Current trending product</p>

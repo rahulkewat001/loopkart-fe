@@ -17,7 +17,7 @@ export default function AuthShell({
   return (
     <div className="auth-shell">
       <video className="auth-shell__video" autoPlay muted loop playsInline preload="auto">
-        <source src="https://videos.pexels.com/video-files/5532782/5532782-uhd_2560_1440_25fps.mp4" type="video/mp4" />
+        <source src="https://cdn.pixabay.com/video/2020/06/15/42408-432951435_large.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
       <div className="auth-shell__video-fade" />

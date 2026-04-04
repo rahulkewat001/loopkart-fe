@@ -10,6 +10,7 @@ import {
   Moon,
   Package,
   Search,
+  Settings,
   ShoppingCart,
   Sparkles,
   Store,
@@ -94,6 +95,7 @@ export default function Navbar({ onBuyClick, onSellClick }) {
           { label: 'Messages', icon: MessageSquareText, to: '/chat' },
           { label: 'Wishlist', icon: Heart, to: '/wishlist' },
           { label: 'Profile', icon: UserRound, to: '/profile' },
+          { label: 'Settings', icon: Settings, to: '/settings' },
         ]
       : [
           { label: 'Sign in', icon: UserRound, to: '/login' },

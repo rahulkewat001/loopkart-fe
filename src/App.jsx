@@ -6,6 +6,7 @@ import HomePage             from './pages/home/HomePage'
 import CartPage             from './pages/cart/CartPage'
 import OrdersPage           from './pages/orders/OrdersPage'
 import ProfilePage          from './pages/profile/ProfilePage'
+import SettingsPage         from './pages/settings/SettingsPage'
 import ProductDetailPage    from './pages/product/ProductDetailPage'
 import WishlistPage         from './pages/wishlist/WishlistPage'
 import AdminPage            from './pages/admin/AdminPage'
@@ -45,6 +46,7 @@ export default function App() {
         <Route path="/cart"        element={<PrivateRoute><CartPage /></PrivateRoute>} />
         <Route path="/orders"      element={<PrivateRoute><OrdersPage /></PrivateRoute>} />
         <Route path="/profile"     element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
+        <Route path="/settings"    element={<PrivateRoute><SettingsPage /></PrivateRoute>} />
         <Route path="/wishlist"          element={<PrivateRoute><WishlistPage /></PrivateRoute>} />
         <Route path="/admin"             element={<PrivateRoute><AdminPage /></PrivateRoute>} />
         <Route path="/become-seller"     element={<PrivateRoute><BecomeSeller /></PrivateRoute>} />

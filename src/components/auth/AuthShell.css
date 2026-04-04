@@ -23,14 +23,6 @@
   filter: saturate(1.2) contrast(1.1);
 }
 
-.auth-shell__video--fallback {
-  display: none;
-}
-
-.auth-shell__video:first-of-type:not([src]) + .auth-shell__video--fallback {
-  display: block;
-}
-
 .auth-shell__video-fade {
   background:
     linear-gradient(110deg, rgba(3, 7, 18, 0.94) 18%, rgba(3, 7, 18, 0.72) 54%, rgba(3, 7, 18, 0.94) 100%);

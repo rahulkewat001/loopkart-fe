@@ -16,10 +16,24 @@ export default function AuthShell({
 }) {
   return (
     <div className="auth-shell">
-      <video className="auth-shell__video" autoPlay muted loop playsInline preload="auto">
-        <source src="https://cdn.pixabay.com/video/2020/06/15/42408-432951435_large.mp4" type="video/mp4" />
-        Your browser does not support the video tag.
-      </video>
+      <video 
+        className="auth-shell__video" 
+        autoPlay 
+        muted 
+        loop 
+        playsInline 
+        preload="auto"
+        src="https://assets.mixkit.co/videos/preview/mixkit-set-of-plateaus-seen-from-the-heights-in-a-sunset-26070-large.mp4"
+      />
+      <video 
+        className="auth-shell__video auth-shell__video--fallback" 
+        autoPlay 
+        muted 
+        loop 
+        playsInline 
+        preload="auto"
+        src="https://assets.mixkit.co/videos/preview/mixkit-digital-animation-of-futuristic-devices-99790-large.mp4"
+      />
       <div className="auth-shell__video-fade" />
       <div className="auth-shell__scene">
         <Suspense fallback={null}>
